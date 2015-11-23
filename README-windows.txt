@@ -4,8 +4,10 @@ Common Setup
 You may need to disable antivirus software to run qpdf's test suite.
 
 To be able to build qpdf and run its test suite, you must have MSYS
-from MinGW installed, and you must have ActiveState Perl.  Here's what
-I did on my system:
+from MinGW installed, and you must have ActiveState Perl. The Perl
+provided by MSYS won't work reliably, it may look working, but may
+fail in arbitrary tests[1], so make sure right from the start to not
+use it!  Here's what I did on my system:
 
 Install ActiveState perl.
 
@@ -15,13 +17,26 @@ will have an icon to start an msys shell.  From the msys shell, run
 
 mingw-get install msys-unzip msys-zip mingw32-make
 
-Then replace perl and make with the appropriate versions:
+Then replace perl and make with the appropriate versions. There are
+different ways to achieve this, I'll suggest two: First is to simply
+rename binaries, which makes it almost impossible to call the wrong
+Perl even by accident. The second and less invasive is to change your
+PATH env var in such a way that the globally installed ActiveState
+Perl is always found first. Which way to go is up to your environment
+and if you need the original binaries for other reasons.
 
 mv /bin/perl.exe /bin/msys-perl.exe
 mv /bin/make.exe /bin/msys-make.exe
 mv /mingw/bin/mingw32-make.exe /mingw/bin/make.exe
 
-Make sure perl --version shows ActiveState perl.
+Instead of renaming mingw32-make.exe, you can use hard- or softlinks
+to create the needed filename, depending on your available permissions
+and version of Windows, which again is a less invasive method.
+
+cd /mingw/bin
+mklink [/H] make.exe mingw32-make.exe
+
+Make sure perl --version shows ActiveState perl!
 
 To install MinGW-w64, first install msys and mingw32 as above.
 
@@ -57,6 +72,8 @@ that works with Microsoft VC6.  Several changes are required, but they
 are well documented in his port.  You can find the VC6 port in the
 contrib area of the qpdf download area.  It may not always be
 up-to-date with the latest official qpdf release.
+
+[1]: https://github.com/qpdf/qpdf/issues/59
 
 
 External Libraries
