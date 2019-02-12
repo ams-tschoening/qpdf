@@ -715,8 +715,7 @@ sub runtest
 	if ($use_tempfile)
 	{
 	    my $tempout = "$tempdir/tempout";
-	    $tempout_status = $rep->winrun(
-		$in_command, File::Spec->devnull(), $tempout);
+	    $tempout_status = $rep->winrun($in_command, undef, $tempout);
 	    open($in, "<$tempout") or
 		croak +(+__PACKAGE__,
 			"->runtest: unable to read from" .
@@ -1663,7 +1662,7 @@ sub safe_pipe
 
     if ($in_windows)
     {
-	$result = $rep->winrun($cmd, File::Spec->devnull(), $outfile);
+	$result = $rep->winrun($cmd, undef, $outfile);
     }
     else
     {
@@ -1758,13 +1757,14 @@ sub winrun
     binmode F;
     print F "exec >$tempfilename\n";
     print F "exec 2>&1\n";
-    print F "exec <$in\n";
+    print F "exec <$in\n" if ($in && ($in ne File::Spec->devnull()));
     my @cmd = ("$winbin/sh", $script);
     if (ref($in_command) eq 'ARRAY')
     {
 	# For debugging, write out the args
 	foreach my $arg (@$in_command)
 	{
+	    $arg =~ s!(>\s*)nul!$1/dev/null!i;
 	    print F "# $arg\n";
 	}
 	print F '"$@"', "\n";
@@ -1772,6 +1772,7 @@ sub winrun
     }
     else
     {
+	$in_command =~ s!(>\s*)nul!$1/dev/null!i;
 	print F "$in_command\n";
     }
     close(F);
