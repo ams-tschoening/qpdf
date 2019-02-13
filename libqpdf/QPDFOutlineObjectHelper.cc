@@ -45,7 +45,7 @@ QPDFOutlineObjectHelper::getParent()
     return this->m->parent;
 }
 
-std::list<QPDFOutlineObjectHelper>
+std::list<PointerHolder<QPDFOutlineObjectHelper> >
 QPDFOutlineObjectHelper::getKids()
 {
     return this->m->kids;

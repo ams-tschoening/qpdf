@@ -3437,19 +3437,19 @@ static void do_json_pages(QPDF& pdf, Options& o, JSON& j)
             "label", pldh.getLabelForPage(pageno).getJSON());
         JSON j_outlines = j_page.addDictionaryMember(
             "outlines", JSON::makeArray());
-        std::list<QPDFOutlineObjectHelper> outlines =
+        std::list<PointerHolder<QPDFOutlineObjectHelper> > outlines =
             odh.getOutlinesForPage(page.getObjGen());
-        for (std::list<QPDFOutlineObjectHelper>::iterator oiter =
+        for (std::list<PointerHolder<QPDFOutlineObjectHelper> >::iterator oiter =
                  outlines.begin();
              oiter != outlines.end(); ++oiter)
         {
             JSON j_outline = j_outlines.addArrayElement(JSON::makeDictionary());
             j_outline.addDictionaryMember(
-                "object", (*oiter).getObjectHandle().getJSON());
+                "object", (*oiter)->getObjectHandle().getJSON());
             j_outline.addDictionaryMember(
-                "title", JSON::makeString((*oiter).getTitle()));
+                "title", JSON::makeString((*oiter)->getTitle()));
             j_outline.addDictionaryMember(
-                "dest", (*oiter).getDest().getJSON(true));
+                "dest", (*oiter)->getDest().getJSON(true));
         }
         j_page.addDictionaryMember("pageposfrom1", JSON::makeInt(1 + pageno));
     }
@@ -3486,13 +3486,13 @@ static void do_json_page_labels(QPDF& pdf, Options& o, JSON& j)
 }
 
 static void add_outlines_to_json(
-    std::list<QPDFOutlineObjectHelper> outlines, JSON& j,
+    std::list<PointerHolder<QPDFOutlineObjectHelper> > outlines, JSON& j,
     std::map<QPDFObjGen, int>& page_numbers)
 {
-    for (std::list<QPDFOutlineObjectHelper>::iterator iter = outlines.begin();
+    for (std::list<PointerHolder<QPDFOutlineObjectHelper> >::iterator iter = outlines.begin();
          iter != outlines.end(); ++iter)
     {
-        QPDFOutlineObjectHelper& ol = *iter;
+        QPDFOutlineObjectHelper& ol = **iter;
         JSON jo = j.addArrayElement(JSON::makeDictionary());
         jo.addDictionaryMember("object", ol.getObjectHandle().getJSON());
         jo.addDictionaryMember("title", JSON::makeString(ol.getTitle()));
