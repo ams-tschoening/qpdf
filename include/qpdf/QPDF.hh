@@ -1299,6 +1299,7 @@ class QPDF
     class Members
     {
         friend class QPDF;
+        friend class ResolveRecorder;
 
       public:
         QPDF_DLL
