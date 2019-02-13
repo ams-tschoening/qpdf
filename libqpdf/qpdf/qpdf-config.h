@@ -1,5 +1,8 @@
 /* libqpdf/qpdf/qpdf-config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Whether to avoid use of HANDLE in Windows */
+#undef AVOID_WINDOWS_HANDLE
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -42,8 +45,7 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
 /* Define to the address where bug reports for this package should be sent. */
