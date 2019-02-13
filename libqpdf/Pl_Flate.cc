@@ -1,5 +1,6 @@
 #include <qpdf/Pl_Flate.hh>
 #include <zlib.h>
+#include <string.h>
 
 #include <qpdf/QUtil.hh>
 
@@ -30,11 +31,22 @@ Pl_Flate::Pl_Flate(char const* identifier, Pipeline* next,
 
 Pl_Flate::~Pl_Flate()
 {
-    if (this->outbuf)
+    delete [] this->outbuf;
+    this->outbuf = 0;
+
+    if (this->initialized)
     {
-	delete [] this->outbuf;
-	this->outbuf = 0;
+        z_stream& zstream = *(static_cast<z_stream*>(this->zdata));
+        if (action == a_deflate)
+        {
+            deflateEnd(&zstream);
+        }
+        else
+        {
+            inflateEnd(&zstream);
+        }
     }
+
     delete static_cast<z_stream*>(this->zdata);
     this->zdata = 0;
 }
@@ -57,7 +69,8 @@ Pl_Flate::write(unsigned char* data, size_t len)
     while (bytes_left > 0)
     {
 	size_t bytes = (bytes_left >= max_bytes ? max_bytes : bytes_left);
-        handleData(buf, bytes, Z_NO_FLUSH);
+        handleData(buf, bytes,
+                   (action == a_inflate ? Z_SYNC_FLUSH : Z_NO_FLUSH));
 	bytes_left -= bytes;
         buf += bytes;
     }
@@ -76,11 +89,10 @@ Pl_Flate::handleData(unsigned char* data, int len, int flush)
 
         // deflateInit and inflateInit are macros that use old-style
         // casts.
-#ifdef __GNUC__
-# if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 406
+#if ((defined(__GNUC__) && ((__GNUC__ * 100) + __GNUC_MINOR__) >= 406) || \
+     defined(__clang__))
 #       pragma GCC diagnostic push
 #       pragma GCC diagnostic ignored "-Wold-style-cast"
-# endif
 #endif
 	if (this->action == a_deflate)
 	{
@@ -90,10 +102,9 @@ Pl_Flate::handleData(unsigned char* data, int len, int flush)
 	{
 	    err = inflateInit(&zstream);
 	}
-#ifdef __GNUC__
-# if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 406
+#if ((defined(__GNUC__) && ((__GNUC__ * 100) + __GNUC_MINOR__) >= 406) || \
+     defined(__clang__))
 #       pragma GCC diagnostic pop
-# endif
 #endif
 
 	checkError("Init", err);
@@ -113,6 +124,14 @@ Pl_Flate::handleData(unsigned char* data, int len, int flush)
 	{
 	    err = inflate(&zstream, flush);
 	}
+        if ((action == a_inflate) && (err != Z_OK) && zstream.msg &&
+            (strcmp(zstream.msg, "incorrect data check") == 0))
+        {
+            // Other PDF readers ignore this specific error. Combining
+            // this with Z_SYNC_FLUSH enables qpdf to handle some
+            // broken zlib streams without losing data.
+            err = Z_STREAM_END;
+        }
 	switch (err)
 	{
 	  case Z_BUF_ERROR:
@@ -157,28 +176,37 @@ Pl_Flate::handleData(unsigned char* data, int len, int flush)
 void
 Pl_Flate::finish()
 {
-    if (this->outbuf)
+    try
     {
-	if (this->initialized)
-	{
-	    z_stream& zstream = *(static_cast<z_stream*>(this->zdata));
-	    unsigned char buf[1];
-	    buf[0] = '\0';
-	    handleData(buf, 0, Z_FINISH);
-	    int err = Z_OK;
-	    if (action == a_deflate)
-	    {
-		err = deflateEnd(&zstream);
-	    }
-	    else
-	    {
-		err = inflateEnd(&zstream);
-	    }
-	    checkError("End", err);
-	}
+        if (this->outbuf)
+        {
+            if (this->initialized)
+            {
+                z_stream& zstream = *(static_cast<z_stream*>(this->zdata));
+                unsigned char buf[1];
+                buf[0] = '\0';
+                handleData(buf, 0, Z_FINISH);
+                int err = Z_OK;
+                if (action == a_deflate)
+                {
+                    err = deflateEnd(&zstream);
+                }
+                else
+                {
+                    err = inflateEnd(&zstream);
+                }
+                this->initialized = false;
+                checkError("End", err);
+            }
 
-	delete [] this->outbuf;
-	this->outbuf = 0;
+            delete [] this->outbuf;
+            this->outbuf = 0;
+        }
+    }
+    catch (std::exception& e)
+    {
+        this->getNext()->finish();
+        throw e;
     }
     this->getNext()->finish();
 }

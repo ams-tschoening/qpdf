@@ -63,6 +63,11 @@ int main()
 	{
 	    throw std::logic_error("hand-created buffer is not as expected");
 	}
+
+        Pl_Buffer bp3("bp3");
+        b = bp3.getBuffer();
+        std::cout << "size: " << b->getSize() << std::endl;
+        delete b;
     }
     catch (std::exception& e)
     {

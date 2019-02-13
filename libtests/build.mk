@@ -3,17 +3,24 @@ BINS_libtests = \
 	ascii85 \
 	bits \
 	buffer \
+	closed_file_input_source \
 	concatenate \
+	dct_compress \
+	dct_uncompress \
 	flate \
 	hex \
+	input_source \
+	json \
 	lzw \
+	matrix \
 	md5 \
-	pcre \
-	png_filter \
+	numrange \
 	pointer_holder \
+	predictors \
 	qutil \
 	random \
 	rc4 \
+	runlength \
 	sha2
 
 TARGETS_libtests = $(foreach B,$(BINS_libtests),libtests/$(OUTPUT_DIR)/$(call binname,$(B)))
@@ -40,4 +47,4 @@ $(foreach B,$(BINS_libtests),$(eval \
 
 $(foreach B,$(BINS_libtests),$(eval \
   libtests/$(OUTPUT_DIR)/$(call binname,$(B)): $(OBJS_$(B)) ; \
-	$(call makebin,$(OBJS_$(B)),$$@,$(LDFLAGS) $(LDFLAGS_libqpdf),$(LIBS) $(LIBS_libqpdf))))
+	$(call makebin,$(OBJS_$(B)),$$@,$(LDFLAGS_libqpdf) $(LDFLAGS),$(LIBS_libqpdf) $(LIBS))))

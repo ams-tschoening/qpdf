@@ -2,19 +2,63 @@ dnl Process this file with autoconf to produce a configure script.
 dnl This config.in requires autoconf 2.5 or greater.
 
 AC_PREREQ([2.68])
-AC_INIT([qpdf],[6.0.0])
+AC_INIT([qpdf],[8.4.0])
 
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES([autoconf.mk])
 AC_CONFIG_FILES([manual/html.xsl manual/print.xsl])
 AC_CONFIG_FILES([libqpdf.pc])
+AC_CONFIG_FILES([libqpdf.map])
 AC_CONFIG_HEADERS([libqpdf/qpdf/qpdf-config.h])
+
+AC_ARG_ENABLE(check-autofiles,
+   AS_HELP_STRING([--enable-check-autofiles],
+		  [if specified, verify checksums on automatically generated files (default=yes); package maintainers may want to disable this]),
+   [if test "$enableval" = "no"; then
+      CHECK_AUTOFILES=0
+    else
+      CHECK_AUTOFILES=1
+    fi],
+   [CHECK_AUTOFILES=1])
+
+# Check to see if automatically generated files are outdated and if we
+# can update them.
+AC_CHECK_PROG(AUTOCONF,autoconf,1,0)
+AC_CHECK_PROG(AUTOHEADER,autoheader,1,0)
+AC_CHECK_PROG(ACLOCAL,aclocal,1,0)
+AC_CHECK_PROG(SHA256SUM,sha256sum,1,0)
+if test "$CHECK_AUTOFILES$AUTOCONF$AUTOHEADER$ACLOCAL$SHA256SUM" = "11111"; then
+   if ! sha256sum -c autofiles.sums; then
+       AC_MSG_ERROR(autofiles are autodated; rerun autogen.sh)
+   fi
+fi
 
 AC_PROG_CC
 AC_PROG_CC_C99
 AC_PROG_CXX
 AC_HEADER_STDC
 LT_INIT([win32-dll])
+
+# * If any interfaces have been removed or changed, or if any private
+#   member variables or virtual functions have been added to any
+#   class, we are not binary compatible. Increment LT_CURRENT, and set
+#   LT_AGE and LT_REVISION to 0.
+#
+# * Otherwise, if any interfaces have been added since the last public
+#   release, then increment LT_CURRENT and LT_AGE, and set LT_REVISION
+#   to 0.
+#
+# * Otherwise, increment LT_REVISION
+
+# LT = libtool
+LT_CURRENT=25
+LT_AGE=4
+LT_REVISION=0
+AC_SUBST(LT_CURRENT)
+AC_SUBST(LT_REVISION)
+AC_SUBST(LT_AGE)
+LT_SONAME=$(expr $LT_CURRENT - $LT_AGE)
+AC_SUBST(LT_SONAME)
 
 AC_ARG_ENABLE(insecure-random,
    AS_HELP_STRING([--enable-insecure-random],
@@ -47,6 +91,21 @@ else
 fi
 
 AX_RANDOM_DEVICE
+
+AC_ARG_ENABLE(avoid-windows-handle,
+   AS_HELP_STRING([--enable-avoid-windows-handle],
+                  [whether to avoid use of HANDLE, useful for some embedded Windows builds (default is no)]),
+   [if test "$enableval" = "yes"; then
+      qpdf_AVOID_HANDLE=1;
+    else
+      qpdf_AVOID_HANDLE=0;
+    fi], [qpdf_AVOID_HANDLE=0])
+if test "$qpdf_AVOID_HANDLE" = "1"; then
+   AC_MSG_RESULT(yes)
+   AC_DEFINE([AVOID_WINDOWS_HANDLE], [1], [Whether to avoid use of HANDLE in Windows])
+else
+   AC_MSG_RESULT(no)
+fi
 
 USE_EXTERNAL_LIBS=0
 AC_MSG_CHECKING(for whether to use external libraries distribution)
@@ -82,9 +141,50 @@ fi
 if test "$BUILD_INTERNAL_LIBS" = "0"; then
    AC_CHECK_HEADER(zlib.h,,[MISSING_ZLIB_H=1; MISSING_ANY=1])
    AC_SEARCH_LIBS(deflate,z zlib,,[MISSING_ZLIB=1; MISSING_ANY=1])
-   AC_CHECK_HEADER(pcre.h,,[MISSING_PCRE_H=1; MISSING_ANY=1])
-   AC_SEARCH_LIBS(pcre_compile,pcre,,[MISSING_PCRE=1; MISSING_ANY=1])
+   AC_CHECK_HEADER(jpeglib.h,,[MISSING_JPEG_H=1; MISSING_ANY=1])
+   AC_SEARCH_LIBS(jpeg_destroy,jpeg,,[MISSING_JPEG=1; MISSING_ANY=1])
 fi
+
+qpdf_USE_WMAIN=0
+AC_LANG_PUSH([C++])
+AC_SUBST(WINDOWS_WMAIN_COMPILE)
+AC_SUBST(WINDOWS_WMAIN_LINK)
+for i in 0 1; do
+  if test "$qpdf_USE_WMAIN" = "0"; then
+    oLDFLAGS="$LDFLAGS"
+    if test "$i" = "1"; then
+      nLDFLAGS="-municode"
+      LDFLAGS="$LDFLAGS $nLDFLAGS"
+      msg="checking for wmain with $nLDFLAGS"
+    else
+      nLDFLAGS=
+      msg="checking for wmain"
+    fi
+    AC_MSG_CHECKING($msg)
+    AC_LINK_IFELSE([AC_LANG_SOURCE(
+      [[#include <windows.h>
+       #include <string.h>
+       #include <stdio.h>
+       extern "C"
+       int wmain(int argc, wchar_t* argv[])
+       {
+           size_t x = wcslen(argv[0]);
+           return 0;
+       }
+       ]])],
+       [qpdf_USE_WMAIN=1],
+       [qpdf_USE_WMAIN=0])
+    LDFLAGS="$oLDFLAGS"
+    if test "$qpdf_USE_WMAIN" = "1"; then
+      AC_MSG_RESULT(yes)
+      WINDOWS_WMAIN_COMPILE="-DWINDOWS_WMAIN $nLDFLAGS"
+      WINDOWS_WMAIN_LINK="$nLDFLAGS"
+    else
+      AC_MSG_RESULT(no)
+    fi
+  fi
+done
+AC_LANG_POP
 
 if test "x$qpdf_OS_SECURE_RANDOM" = "x1"; then
   OLIBS=$LIBS
@@ -93,7 +193,7 @@ if test "x$qpdf_OS_SECURE_RANDOM" = "x1"; then
   AC_LINK_IFELSE([AC_LANG_PROGRAM(
     [[#pragma comment(lib, "crypt32.lib")
      #include <windows.h>
-     #include <Wincrypt.h>
+     #include <wincrypt.h>
      HCRYPTPROV cp;]],
      [CryptAcquireContext(&cp, NULL, NULL, PROV_RSA_FULL, 0);]
      )],
@@ -153,23 +253,30 @@ else
 fi
 AC_SUBST(HAVE_LD_VERSION_SCRIPT)
 
-AC_MSG_CHECKING(for gnu make >= 3.81)
 make_okay=0
-if make --version >/dev/null 2>&1; then
-  v=`make --version | grep 'GNU Make' | sed -e 's/.*Make //'`
-  maj=`echo $v | cut -d. -f 1`
-  min=`echo $v | cut -d. -f 2`
-  if test $maj -gt 3 -o '(' $maj -eq 3 -a $min -ge 81 ')'; then
-     make_okay=1
+for make_prog in make gmake; do
+  this_make_okay=0
+  AC_MSG_CHECKING(for gnu make >= 3.81 ($make_prog))
+  if $make_prog --version >/dev/null 2>&1; then
+    v=`$make_prog --version | grep 'GNU Make' | sed -e 's/.*Make //'`
+    maj=`echo $v | cut -d. -f 1`
+    min=`echo $v | cut -d. -f 2`
+    if test $maj -gt 3 -o '(' $maj -eq 3 -a $min -ge 81 ')'; then
+       this_make_okay=1
+       make_okay=1
+    fi
   fi
-fi
-if test "$make_okay" = "1"; then
-  AC_MSG_RESULT(yes)
-else
+  if test "$this_make_okay" = "1"; then
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+done
+
+if test "$make_okay" = "0"; then
   dnl Don't set MISSING_ANY=1 -- maybe user calls make something else
   MISSING_MAKE_381=1
   ISSUE_WARNINGS=1
-  AC_MSG_RESULT(no)
 fi
 
 AC_SUBST(GENDEPS)
@@ -201,7 +308,7 @@ AC_MSG_CHECKING(which build rules to use)
 AC_SUBST(BUILDRULES)
 AC_ARG_WITH(buildrules,
    AS_HELP_STRING([--with-buildrules=rules],
-		  [which build rules to use; see README]),
+		  [which build rules to use; see README.md]),
    [BUILDRULES=$withval],
    [BUILDRULES=libtool])
 AC_MSG_RESULT($BUILDRULES)
@@ -446,12 +553,12 @@ if test "$MISSING_ZLIB" = "1"; then
   AC_MSG_WARN(unable to find required library z (or zlib))
 fi
 
-if test "$MISSING_PCRE_H" = "1"; then
-  AC_MSG_WARN(unable to find required header pcre.h)
+if test "$MISSING_JPEG_H" = "1"; then
+  AC_MSG_WARN(unable to find required header jpeglib.h)
 fi
 
-if test "$MISSING_PCRE" = "1"; then
-  AC_MSG_WARN(unable to find required library pcre)
+if test "$MISSING_JPEG" = "1"; then
+  AC_MSG_WARN(unable to find required library jpeg)
 fi
 
 if test "$MISSING_DOCBOOK_FO" = "1"; then
@@ -490,7 +597,7 @@ if test "$USE_EXTERNAL_LIBS" = "1"; then
    # much trouble getting it to work with a different compiler.
    CPPFLAGS="$CPPFLAGS -Iexternal-libs/include"
    LDFLAGS="$LDFLAGS -Lexternal-libs/lib-$BUILDRULES$WINDOWS_WORDSIZE"
-   LIBS="$LIBS -lz -lpcre"
+   LIBS="$LIBS -lz -ljpeg"
 fi
 
 AC_OUTPUT

@@ -9,12 +9,14 @@ SRCS_libqpdf = \
 	libqpdf/BitWriter.cc \
 	libqpdf/Buffer.cc \
 	libqpdf/BufferInputSource.cc \
+	libqpdf/ClosedFileInputSource.cc \
+	libqpdf/ContentNormalizer.cc \
 	libqpdf/FileInputSource.cc \
 	libqpdf/InputSource.cc \
 	libqpdf/InsecureRandomDataProvider.cc \
+	libqpdf/JSON.cc \
 	libqpdf/MD5.cc \
 	libqpdf/OffsetInputSource.cc \
-	libqpdf/PCRE.cc \
 	libqpdf/Pipeline.cc \
 	libqpdf/Pl_AES_PDF.cc \
 	libqpdf/Pl_ASCII85Decoder.cc \
@@ -22,6 +24,7 @@ SRCS_libqpdf = \
 	libqpdf/Pl_Buffer.cc \
 	libqpdf/Pl_Concatenate.cc \
 	libqpdf/Pl_Count.cc \
+	libqpdf/Pl_DCT.cc \
 	libqpdf/Pl_Discard.cc \
 	libqpdf/Pl_Flate.cc \
 	libqpdf/Pl_LZWDecoder.cc \
@@ -29,13 +32,27 @@ SRCS_libqpdf = \
 	libqpdf/Pl_PNGFilter.cc \
 	libqpdf/Pl_QPDFTokenizer.cc \
 	libqpdf/Pl_RC4.cc \
+	libqpdf/Pl_RunLength.cc \
 	libqpdf/Pl_SHA2.cc \
 	libqpdf/Pl_StdioFile.cc \
+	libqpdf/Pl_TIFFPredictor.cc \
 	libqpdf/QPDF.cc \
+	libqpdf/QPDFAcroFormDocumentHelper.cc \
+	libqpdf/QPDFAnnotationObjectHelper.cc \
 	libqpdf/QPDFExc.cc \
+	libqpdf/QPDFFormFieldObjectHelper.cc \
+	libqpdf/QPDFMatrix.cc \
+	libqpdf/QPDFNameTreeObjectHelper.cc \
+	libqpdf/QPDFNumberTreeObjectHelper.cc \
 	libqpdf/QPDFObjGen.cc \
 	libqpdf/QPDFObject.cc \
 	libqpdf/QPDFObjectHandle.cc \
+	libqpdf/QPDFOutlineDocumentHelper.cc \
+	libqpdf/QPDFOutlineObjectHelper.cc \
+	libqpdf/QPDFPageDocumentHelper.cc \
+	libqpdf/QPDFPageLabelDocumentHelper.cc \
+	libqpdf/QPDFPageObjectHelper.cc \
+	libqpdf/QPDFSystemError.cc \
 	libqpdf/QPDFTokenizer.cc \
 	libqpdf/QPDFWriter.cc \
 	libqpdf/QPDFXRefEntry.cc \
@@ -82,18 +99,5 @@ $(CCOBJS_libqpdf): libqpdf/$(OUTPUT_DIR)/%.$(LOBJ): libqpdf/%.cc
 $(COBJS_libqpdf): libqpdf/$(OUTPUT_DIR)/%.$(LOBJ): libqpdf/%.c
 	$(call c_libcompile,$<,$(INCLUDES_libqpdf))
 
-# Last three arguments to makelib are CURRENT,REVISION,AGE.
-#
-# * If any interfaces have been removed or changed, we are not binary
-#   compatible.  Increment CURRENT, and set AGE and REVISION to 0.
-#   Also update libqpdf.map, changing the numeric portion to match
-#   CURRENT.
-#
-# * Otherwise, if any interfaces have been added since the last
-#   public release, then increment CURRENT and AGE, and set REVISION
-#   to 0.
-#
-# * Otherwise, increment REVISION
-
 $(TARGETS_libqpdf): $(OBJS_libqpdf)
-	$(call makelib,$(OBJS_libqpdf),$@,$(LDFLAGS),$(LIBS),17,0,0)
+	$(call makelib,$(OBJS_libqpdf),$@,$(LDFLAGS),$(LIBS),$(LT_CURRENT),$(LT_REVISION),$(LT_AGE))

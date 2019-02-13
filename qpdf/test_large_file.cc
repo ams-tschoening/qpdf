@@ -5,6 +5,7 @@
 // I/O.
 
 #include <qpdf/QPDF.hh>
+#include <qpdf/QPDFPageDocumentHelper.hh>
 #include <qpdf/QPDFWriter.hh>
 #include <qpdf/QPDFObjectHandle.hh>
 #include <qpdf/QUtil.hh>
@@ -208,6 +209,7 @@ static void create_pdf(char const* filename)
     mediabox.appendItem(newInteger(612));
     mediabox.appendItem(newInteger(792));
 
+    QPDFPageDocumentHelper dh(pdf);
     for (int pageno = 1; pageno <= npages; ++pageno)
     {
         QPDFObjectHandle image = QPDFObjectHandle::newStream(&pdf);
@@ -241,7 +243,7 @@ static void create_pdf(char const* filename)
         page.replaceKey("/Contents", contents);
         page.replaceKey("/Resources", resources);
 
-        pdf.addPage(page, false);
+        dh.addPage(page, false);
     }
 
     QPDFWriter w(pdf, filename);
@@ -273,7 +275,7 @@ static void check_image(int pageno, QPDFObjectHandle page)
     QPDFObjectHandle image =
         page.getKey("/Resources").getKey("/XObject").getKey("/Im1");
     ImageChecker ic(pageno);
-    image.pipeStreamData(&ic, true, false, false);
+    image.pipeStreamData(&ic, 0, qpdf_dl_specialized);
 }
 
 static void check_pdf(char const* filename)

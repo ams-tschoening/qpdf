@@ -1,13 +1,27 @@
-/* Copyright (c) 2005-2015 Jay Berkenbilt
+/* Copyright (c) 2005-2019 Jay Berkenbilt
  *
- * This file is part of qpdf.  This software may be distributed under
- * the terms of version 2 of the Artistic License which may be found
- * in the source distribution.  It is provided "as is" without express
- * or implied warranty.
+ * This file is part of qpdf.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Versions of qpdf prior to version 7 were released under the terms
+ * of version 2.0 of the Artistic License. At your option, you may
+ * continue to consider qpdf to be licensed under those terms. Please
+ * see the manual for additional information.
  */
 
-#ifndef __QPDF_C_H__
-#define __QPDF_C_H__
+#ifndef QPDF_C_H
+#define QPDF_C_H
 
 /*
  * This file defines a basic "C" API for qpdf.  It provides access to
@@ -166,6 +180,14 @@ extern "C" {
     QPDF_DLL
     void qpdf_set_suppress_warnings(qpdf_data qpdf, QPDF_BOOL value);
 
+    /* CHECK FUNCTIONS */
+
+    /* Attempt to read the entire PDF file to see if there are any
+     * errors qpdf can detect.
+     */
+    QPDF_DLL
+    QPDF_ERROR_CODE qpdf_check_pdf(qpdf_data qpdf);
+
     /* READ FUNCTIONS */
 
     /* READ PARAMETER FUNCTIONS -- must be called before qpdf_read */
@@ -319,6 +341,21 @@ extern "C" {
 				   enum qpdf_stream_data_e mode);
 
     QPDF_DLL
+    void qpdf_set_compress_streams(qpdf_data qpdf, QPDF_BOOL value);
+
+
+    QPDF_DLL
+    void qpdf_set_decode_level(qpdf_data qpdf,
+                               enum qpdf_stream_decode_level_e level);
+
+    QPDF_DLL
+    void qpdf_set_preserve_unreferenced_objects(
+        qpdf_data qpdf, QPDF_BOOL value);
+
+    QPDF_DLL
+    void qpdf_set_newline_before_endstream(qpdf_data qpdf, QPDF_BOOL value);
+
+    QPDF_DLL
     void qpdf_set_content_normalization(qpdf_data qpdf, QPDF_BOOL value);
 
     QPDF_DLL
@@ -352,6 +389,40 @@ extern "C" {
 	QPDF_BOOL allow_print, QPDF_BOOL allow_modify,
 	QPDF_BOOL allow_extract, QPDF_BOOL allow_annotate);
 
+    QPDF_DLL
+    void qpdf_set_r3_encryption_parameters2(
+	qpdf_data qpdf, char const* user_password, char const* owner_password,
+	QPDF_BOOL allow_accessibility, QPDF_BOOL allow_extract,
+        QPDF_BOOL allow_assemble, QPDF_BOOL allow_annotate_and_form,
+        QPDF_BOOL allow_form_filling, QPDF_BOOL allow_modify_other,
+	enum qpdf_r3_print_e print);
+
+    QPDF_DLL
+    void qpdf_set_r4_encryption_parameters2(
+	qpdf_data qpdf, char const* user_password, char const* owner_password,
+	QPDF_BOOL allow_accessibility, QPDF_BOOL allow_extract,
+        QPDF_BOOL allow_assemble, QPDF_BOOL allow_annotate_and_form,
+        QPDF_BOOL allow_form_filling, QPDF_BOOL allow_modify_other,
+	enum qpdf_r3_print_e print,
+        QPDF_BOOL encrypt_metadata, QPDF_BOOL use_aes);
+
+    QPDF_DLL
+    void qpdf_set_r5_encryption_parameters2(
+	qpdf_data qpdf, char const* user_password, char const* owner_password,
+	QPDF_BOOL allow_accessibility, QPDF_BOOL allow_extract,
+        QPDF_BOOL allow_assemble, QPDF_BOOL allow_annotate_and_form,
+        QPDF_BOOL allow_form_filling, QPDF_BOOL allow_modify_other,
+	enum qpdf_r3_print_e print, QPDF_BOOL encrypt_metadata);
+
+    QPDF_DLL
+    void qpdf_set_r6_encryption_parameters2(
+	qpdf_data qpdf, char const* user_password, char const* owner_password,
+	QPDF_BOOL allow_accessibility, QPDF_BOOL allow_extract,
+        QPDF_BOOL allow_assemble, QPDF_BOOL allow_annotate_and_form,
+        QPDF_BOOL allow_form_filling, QPDF_BOOL allow_modify_other,
+	enum qpdf_r3_print_e print, QPDF_BOOL encrypt_metadata);
+
+    /* Pre 8.4.0 encryption API */
     QPDF_DLL
     void qpdf_set_r3_encryption_parameters(
 	qpdf_data qpdf, char const* user_password, char const* owner_password,
@@ -405,4 +476,4 @@ extern "C" {
 #endif
 
 
-#endif /* __QPDF_C_H__ */
+#endif /* QPDF_C_H */

@@ -4,6 +4,7 @@
 #include <qpdf/QTC.hh>
 #include <qpdf/QPDFWriter.hh>
 #include <qpdf/QPDFObjectHandle.hh>
+#include <qpdf/QPDFPageDocumentHelper.hh>
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
@@ -67,7 +68,7 @@ void runtest(int n)
         page.replaceKey("/Contents", contents);
         page.replaceKey("/Resources", resources);
 
-        pdf.addPage(page, true);
+        QPDFPageDocumentHelper(pdf).addPage(page, true);
 
 	QPDFWriter w(pdf, "a.pdf");
 	w.setStaticID(true);
@@ -107,7 +108,7 @@ int main(int argc, char* argv[])
 
     try
     {
-	int n = atoi(argv[1]);
+	int n = QUtil::string_to_int(argv[1]);
 	runtest(n);
     }
     catch (std::exception& e)

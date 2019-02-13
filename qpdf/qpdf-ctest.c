@@ -228,6 +228,7 @@ static void test06(char const* infile,
     qpdf_set_object_stream_mode(qpdf, qpdf_o_generate);
     qpdf_write(qpdf);
     report_errors();
+    free(buf);
 }
 
 static void test07(char const* infile,
@@ -302,9 +303,10 @@ static void test12(char const* infile,
     qpdf_read(qpdf, infile, password);
     qpdf_init_write(qpdf, outfile);
     qpdf_set_static_ID(qpdf, QPDF_TRUE);
-    qpdf_set_r3_encryption_parameters(
+    qpdf_set_r3_encryption_parameters2(
 	qpdf, "user2", "owner2", QPDF_TRUE, QPDF_TRUE,
-	qpdf_r3p_low, qpdf_r3m_all);
+        QPDF_TRUE, QPDF_TRUE, QPDF_TRUE, QPDF_TRUE,
+	qpdf_r3p_low);
     qpdf_write(qpdf);
     report_errors();
 }
@@ -349,9 +351,10 @@ static void test15(char const* infile,
     qpdf_init_write(qpdf, outfile);
     qpdf_set_static_ID(qpdf, QPDF_TRUE);
     qpdf_set_static_aes_IV(qpdf, QPDF_TRUE);
-    qpdf_set_r4_encryption_parameters(
+    qpdf_set_r4_encryption_parameters2(
 	qpdf, "user2", "owner2", QPDF_TRUE, QPDF_TRUE,
-	qpdf_r3p_low, qpdf_r3m_all, QPDF_TRUE, QPDF_TRUE);
+        QPDF_TRUE, QPDF_TRUE, QPDF_TRUE, QPDF_TRUE,
+	qpdf_r3p_low, QPDF_TRUE, QPDF_TRUE);
     qpdf_write(qpdf);
     report_errors();
 }
@@ -404,9 +407,10 @@ static void test17(char const* infile,
     qpdf_init_write(qpdf, outfile);
     qpdf_set_static_ID(qpdf, QPDF_TRUE);
     qpdf_set_static_aes_IV(qpdf, QPDF_TRUE);
-    qpdf_set_r5_encryption_parameters(
+    qpdf_set_r5_encryption_parameters2(
 	qpdf, "user3", "owner3", QPDF_TRUE, QPDF_TRUE,
-	qpdf_r3p_low, qpdf_r3m_all, QPDF_TRUE);
+        QPDF_TRUE, QPDF_TRUE, QPDF_TRUE, QPDF_TRUE,
+	qpdf_r3p_low, QPDF_TRUE);
     qpdf_write(qpdf);
     report_errors();
 }
@@ -420,9 +424,10 @@ static void test18(char const* infile,
     qpdf_init_write(qpdf, outfile);
     qpdf_set_static_ID(qpdf, QPDF_TRUE);
     qpdf_set_static_aes_IV(qpdf, QPDF_TRUE);
-    qpdf_set_r6_encryption_parameters(
+    qpdf_set_r6_encryption_parameters2(
 	qpdf, "user4", "owner4", QPDF_TRUE, QPDF_TRUE,
-	qpdf_r3p_low, qpdf_r3m_all, QPDF_TRUE);
+        QPDF_TRUE, QPDF_TRUE, QPDF_TRUE, QPDF_TRUE,
+	qpdf_r3p_low, QPDF_TRUE);
     qpdf_write(qpdf);
     report_errors();
 }
@@ -436,6 +441,62 @@ static void test19(char const* infile,
     qpdf_init_write(qpdf, outfile);
     qpdf_set_deterministic_ID(qpdf, QPDF_TRUE);
     qpdf_write(qpdf);
+    report_errors();
+}
+
+static void test20(char const* infile,
+		   char const* password,
+		   char const* outfile,
+		   char const* outfile2)
+{
+    qpdf_read(qpdf, infile, password);
+    qpdf_init_write(qpdf, outfile);
+    qpdf_set_static_ID(qpdf, QPDF_TRUE);
+    qpdf_set_static_aes_IV(qpdf, QPDF_TRUE);
+    qpdf_set_compress_streams(qpdf, QPDF_FALSE);
+    qpdf_set_decode_level(qpdf, qpdf_dl_specialized);
+    qpdf_write(qpdf);
+    report_errors();
+}
+
+static void test21(char const* infile,
+		   char const* password,
+		   char const* outfile,
+		   char const* outfile2)
+{
+    qpdf_read(qpdf, infile, password);
+    qpdf_init_write(qpdf, outfile);
+    qpdf_set_static_ID(qpdf, QPDF_TRUE);
+    qpdf_set_static_aes_IV(qpdf, QPDF_TRUE);
+    qpdf_set_preserve_unreferenced_objects(qpdf, QPDF_TRUE);
+    qpdf_write(qpdf);
+    report_errors();
+}
+
+static void test22(char const* infile,
+		   char const* password,
+		   char const* outfile,
+		   char const* outfile2)
+{
+    qpdf_read(qpdf, infile, password);
+    qpdf_init_write(qpdf, outfile);
+    qpdf_set_static_ID(qpdf, QPDF_TRUE);
+    qpdf_set_static_aes_IV(qpdf, QPDF_TRUE);
+    qpdf_set_compress_streams(qpdf, QPDF_FALSE);
+    qpdf_set_newline_before_endstream(qpdf, QPDF_TRUE);
+    qpdf_write(qpdf);
+    report_errors();
+}
+
+static void test23(char const* infile,
+		   char const* password,
+		   char const* outfile,
+		   char const* outfile2)
+{
+    QPDF_ERROR_CODE status = 0;
+    qpdf_read(qpdf, infile, password);
+    status = qpdf_check_pdf(qpdf);
+    printf("status: %d\n", status);
     report_errors();
 }
 
@@ -498,6 +559,10 @@ int main(int argc, char* argv[])
 	  (n == 17) ? test17 :
 	  (n == 18) ? test18 :
 	  (n == 19) ? test19 :
+	  (n == 20) ? test20 :
+	  (n == 21) ? test21 :
+	  (n == 22) ? test22 :
+	  (n == 23) ? test23 :
 	  0);
 
     if (fn == 0)

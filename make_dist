@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 #
 # This program creates a source distribution of qpdf.  For details,
-# see README.maintainer.
+# see README-maintainer.md.
 #
 
 require 5.008;
@@ -9,68 +9,60 @@ use warnings;
 use strict;
 use File::Basename;
 use Cwd;
+use Cwd 'abs_path';
 use IO::File;
+use File::Path qw(rmtree);
 
 my $whoami = basename($0);
 
-usage() unless @ARGV >= 1;
-my $srcdir = shift(@ARGV);
 my $run_tests = 1;
-if (@ARGV)
+my $keep_tmp = 0;
+my $ci_mode = 0;
+my $version = undef;
+foreach my $arg (@ARGV)
 {
-    if ($ARGV[0] eq '--no-tests')
+    if ($arg eq '--no-tests')
     {
 	$run_tests = 0;
+    }
+    elsif ($arg eq '--keep-tmp')
+    {
+        $keep_tmp = 1;
+    }
+    elsif ($arg eq '--ci')
+    {
+        $ci_mode = 1;
+    }
+    elsif (! defined $version)
+    {
+        $version = $arg;
     }
     else
     {
 	usage();
     }
 }
-$srcdir =~ s,/$,,;
-usage() unless $srcdir =~ m/^qpdf-(\d+\.\d+(?:\.(a|b|rc)?\d+)?)$/;
-my $version = $1;
-usage() unless -d $srcdir;
 
-my $pwd = getcwd();
-cd($srcdir);
+if ($ci_mode && (! defined $version))
+{
+    $version = get_version_from_configure();
+}
+
+usage() unless defined $version;
+usage() unless $version =~ m/^(\d+\.\d+(?:\.(a|b|rc)?\d+)?)$/;
+my $distname = "qpdf-$version";
+my $tmpdir = "/tmp/$distname";
+if ((-d $tmpdir) && (! $keep_tmp))
+{
+    rmtree($tmpdir);
+}
+run("git archive --prefix=qpdf-$version/ HEAD . | (cd /tmp; tar xf -)");
+cd($tmpdir);
 
 # Check versions
-my $fh = safe_open("configure.ac");
-my $config_version = 'unknown';
-while (<$fh>)
-{
-    if (m/^AC_INIT\(\[qpdf\],\[([^\)]+)\]\)/)
-    {
-	$config_version = $1;
-	last;
-    }
-}
-$fh->close();
-
-$fh = safe_open("libqpdf/QPDF.cc");
-my $code_version = 'unknown';
-while (<$fh>)
-{
-    if (m/QPDF::qpdf_version = \"([^\"]+)\"/)
-    {
-	$code_version = $1;
-	last;
-    }
-}
-$fh->close();
-
-$fh = safe_open("manual/qpdf-manual.xml");
-my $doc_version = 'unknown';
-while (<$fh>)
-{
-    if (m/swversion "([^\"]+)\"/)
-    {
-	$doc_version = $1;
-	last;
-    }
-}
-$fh->close();
+my $config_version = get_version_from_configure();
+my $code_version = get_version_from_source();
+my $doc_version = get_version_from_manual();
 
 my $version_error = 0;
 if ($version ne $config_version)
@@ -93,29 +85,81 @@ if ($version_error)
     die "$whoami: version numbers are not consistent\n";
 }
 
-run("./autogen.sh");
-run("./configure --enable-doc-maintenance --enable-werror");
+run("./configure --disable-shared --enable-doc-maintenance --enable-werror");
 run("make -j8 build_manual");
 run("make distclean");
-cd($pwd);
-run("tar czvf $srcdir.tar.gz-candidate $srcdir");
+cd("/tmp");
+run("tar czvf $distname.tar.gz-candidate $distname");
 if ($run_tests)
 {
-    cd($srcdir);
+    cd($tmpdir);
     run("./configure");
     run("make -j8");
     run("make check");
-    cd($pwd);
+    cd("/tmp");
 }
-rename "$srcdir.tar.gz-candidate", "$srcdir.tar.gz" or die;
+my $distfile = ($ci_mode ? "$distname-ci.tar.gz" : "$distname.tar.gz");
+rename "$distname.tar.gz-candidate", $distfile or die;
+
+if (! $keep_tmp)
+{
+    rmtree($tmpdir);
+}
 
 print "
-Source distribution created as $srcdir.tar.gz
-You can now remove $srcdir.
+Source distribution created as /tmp/$distfile
 If this is a release, don't forget to tag the version control system and
 make a backup of the release tar file.
 
 ";
+
+sub get_version_from_configure
+{
+    my $fh = safe_open("configure.ac");
+    my $config_version = 'unknown';
+    while (<$fh>)
+    {
+        if (m/^AC_INIT\(\[qpdf\],\[([^\)]+)\]\)/)
+        {
+            $config_version = $1;
+            last;
+        }
+    }
+    $fh->close();
+    $config_version;
+}
+
+sub get_version_from_source
+{
+    my $fh = safe_open("libqpdf/QPDF.cc");
+    my $code_version = 'unknown';
+    while (<$fh>)
+    {
+        if (m/QPDF::qpdf_version = \"([^\"]+)\"/)
+        {
+            $code_version = $1;
+            last;
+        }
+    }
+    $fh->close();
+    $code_version;
+}
+
+sub get_version_from_manual
+{
+    my $fh = safe_open("manual/qpdf-manual.xml");
+    my $doc_version = 'unknown';
+    while (<$fh>)
+    {
+        if (m/swversion "([^\"]+)\"/)
+        {
+            $doc_version = $1;
+            last;
+        }
+    }
+    $fh->close();
+    $doc_version;
+}
 
 sub safe_open
 {
@@ -139,12 +183,14 @@ sub cd
 sub usage
 {
     die "
-Usage: $whoami qpdf-version [ --no-tests ]
+Usage: $whoami [ --no-tests --keep-tmp ] version
 
-qpdf-version must be a directory containing a pristine export of that
-version of qpdf from the version control system.  Use of --no-tests
-can be used for internally testing releases, but do not use it for a
-real release.
+Use of --no-tests can be used for internally testing releases, but do
+not use it for a real release.
+
+$whoami creates /tmp/qpdf-<version> and deletes it when done. With
+--keep-tmp, the directory is kept. This can be useful for debugging
+the release process.
 
 ";
 }

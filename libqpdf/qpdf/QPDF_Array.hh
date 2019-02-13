@@ -1,5 +1,5 @@
-#ifndef __QPDF_ARRAY_HH__
-#define __QPDF_ARRAY_HH__
+#ifndef QPDF_ARRAY_HH
+#define QPDF_ARRAY_HH
 
 #include <qpdf/QPDFObject.hh>
 
@@ -12,8 +12,10 @@ class QPDF_Array: public QPDFObject
     QPDF_Array(std::vector<QPDFObjectHandle> const& items);
     virtual ~QPDF_Array();
     virtual std::string unparse();
+    virtual JSON getJSON();
     virtual QPDFObject::object_type_e getTypeCode() const;
     virtual char const* getTypeName() const;
+    virtual void setDescription(QPDF*, std::string const&);
 
     int getNItems() const;
     QPDFObjectHandle getItem(int n) const;
@@ -32,4 +34,4 @@ class QPDF_Array: public QPDFObject
     std::vector<QPDFObjectHandle> items;
 };
 
-#endif // __QPDF_ARRAY_HH__
+#endif // QPDF_ARRAY_HH

@@ -4,6 +4,7 @@
 #include <qpdf/QPDFWriter.hh>
 #include <qpdf/QTC.hh>
 #include <qpdf/QPDFExc.hh>
+#include <qpdf/Pl_Discard.hh>
 
 #include <list>
 #include <string>
@@ -80,6 +81,15 @@ static void call_init_write_memory(qpdf_data qpdf)
 static void call_write(qpdf_data qpdf)
 {
     qpdf->qpdf_writer->write();
+}
+
+static void call_check(qpdf_data qpdf)
+{
+    QPDFWriter w(*qpdf->qpdf);
+    Pl_Discard discard;
+    w.setOutputPipeline(&discard);
+    w.setDecodeLevel(qpdf_dl_all);
+    w.write();
 }
 
 static QPDF_ERROR_CODE trap_errors(qpdf_data qpdf, void (*fn)(qpdf_data))
@@ -236,6 +246,13 @@ char const* qpdf_get_error_message_detail(qpdf_data qpdf, qpdf_error e)
     return e->exc->getMessageDetail().c_str();
 }
 
+QPDF_ERROR_CODE qpdf_check_pdf(qpdf_data qpdf)
+{
+    QPDF_ERROR_CODE status = trap_errors(qpdf, &call_check);
+    QTC::TC("qpdf", "qpdf-c called qpdf_check_pdf");
+    return status;
+}
+
 void qpdf_set_suppress_warnings(qpdf_data qpdf, QPDF_BOOL value)
 {
     QTC::TC("qpdf", "qpdf-c called qpdf_set_suppress_warnings");
@@ -261,7 +278,15 @@ QPDF_ERROR_CODE qpdf_read(qpdf_data qpdf, char const* filename,
     qpdf->filename = filename;
     qpdf->password = password;
     status = trap_errors(qpdf, &call_read);
-    QTC::TC("qpdf", "qpdf-c called qpdf_read", status);
+    // We no longer have a good way to exercise a file with both
+    // warnings and errors because qpdf is getting much better at
+    // recovering.
+    QTC::TC("qpdf", "qpdf-c called qpdf_read",
+            (status == 0) ? 0
+            : (status & QPDF_WARNINGS) ? 1
+            : (status & QPDF_ERRORS) ? 2 :
+            -1
+        );
     return status;
 }
 
@@ -494,6 +519,30 @@ void qpdf_set_object_stream_mode(qpdf_data qpdf, qpdf_object_stream_e mode)
     qpdf->qpdf_writer->setObjectStreamMode(mode);
 }
 
+void qpdf_set_compress_streams(qpdf_data qpdf, QPDF_BOOL value)
+{
+    QTC::TC("qpdf", "qpdf-c called qpdf_set_compress_streams");
+    qpdf->qpdf_writer->setCompressStreams(value);
+}
+
+void qpdf_set_decode_level(qpdf_data qpdf, qpdf_stream_decode_level_e level)
+{
+    QTC::TC("qpdf", "qpdf-c called qpdf_set_decode_level");
+    qpdf->qpdf_writer->setDecodeLevel(level);
+}
+
+void qpdf_set_preserve_unreferenced_objects(qpdf_data qpdf, QPDF_BOOL value)
+{
+    QTC::TC("qpdf", "qpdf-c called qpdf_set_preserve_unreferenced_objects");
+    qpdf->qpdf_writer->setPreserveUnreferencedObjects(value);
+}
+
+void qpdf_set_newline_before_endstream(qpdf_data qpdf, QPDF_BOOL value)
+{
+    QTC::TC("qpdf", "qpdf-c called qpdf_set_newline_before_endstream");
+    qpdf->qpdf_writer->setNewlineBeforeEndstream(value);
+}
+
 void qpdf_set_stream_data_mode(qpdf_data qpdf, qpdf_stream_data_e mode)
 {
     QTC::TC("qpdf", "qpdf-c called qpdf_set_stream_data_mode");
@@ -554,12 +603,77 @@ void qpdf_set_r2_encryption_parameters(
 	allow_print, allow_modify, allow_extract, allow_annotate);
 }
 
+void qpdf_set_r3_encryption_parameters2(
+    qpdf_data qpdf, char const* user_password, char const* owner_password,
+    QPDF_BOOL allow_accessibility, QPDF_BOOL allow_extract,
+    QPDF_BOOL allow_assemble, QPDF_BOOL allow_annotate_and_form,
+    QPDF_BOOL allow_form_filling, QPDF_BOOL allow_modify_other,
+    enum qpdf_r3_print_e print)
+{
+    QTC::TC("qpdf", "qpdf-c called qpdf_set_r3_encryption_parameters");
+    qpdf->qpdf_writer->setR3EncryptionParameters(
+        user_password, owner_password,
+        allow_accessibility, allow_extract,
+        allow_assemble, allow_annotate_and_form,
+        allow_form_filling, allow_modify_other,
+        print);
+}
+
+void qpdf_set_r4_encryption_parameters2(
+    qpdf_data qpdf, char const* user_password, char const* owner_password,
+    QPDF_BOOL allow_accessibility, QPDF_BOOL allow_extract,
+    QPDF_BOOL allow_assemble, QPDF_BOOL allow_annotate_and_form,
+    QPDF_BOOL allow_form_filling, QPDF_BOOL allow_modify_other,
+    enum qpdf_r3_print_e print,
+    QPDF_BOOL encrypt_metadata, QPDF_BOOL use_aes)
+{
+    QTC::TC("qpdf", "qpdf-c called qpdf_set_r4_encryption_parameters");
+    qpdf->qpdf_writer->setR4EncryptionParameters(
+        user_password, owner_password,
+        allow_accessibility, allow_extract,
+        allow_assemble, allow_annotate_and_form,
+        allow_form_filling, allow_modify_other,
+        print, encrypt_metadata, use_aes);
+}
+
+
+void qpdf_set_r5_encryption_parameters2(
+    qpdf_data qpdf, char const* user_password, char const* owner_password,
+    QPDF_BOOL allow_accessibility, QPDF_BOOL allow_extract,
+    QPDF_BOOL allow_assemble, QPDF_BOOL allow_annotate_and_form,
+    QPDF_BOOL allow_form_filling, QPDF_BOOL allow_modify_other,
+    enum qpdf_r3_print_e print, QPDF_BOOL encrypt_metadata)
+{
+    QTC::TC("qpdf", "qpdf-c called qpdf_set_r5_encryption_parameters");
+    qpdf->qpdf_writer->setR5EncryptionParameters(
+        user_password, owner_password,
+        allow_accessibility, allow_extract,
+        allow_assemble, allow_annotate_and_form,
+        allow_form_filling, allow_modify_other,
+        print, encrypt_metadata);
+}
+
+void qpdf_set_r6_encryption_parameters2(
+    qpdf_data qpdf, char const* user_password, char const* owner_password,
+    QPDF_BOOL allow_accessibility, QPDF_BOOL allow_extract,
+    QPDF_BOOL allow_assemble, QPDF_BOOL allow_annotate_and_form,
+    QPDF_BOOL allow_form_filling, QPDF_BOOL allow_modify_other,
+    enum qpdf_r3_print_e print, QPDF_BOOL encrypt_metadata)
+{
+    QTC::TC("qpdf", "qpdf-c called qpdf_set_r6_encryption_parameters");
+    qpdf->qpdf_writer->setR6EncryptionParameters(
+        user_password, owner_password,
+        allow_accessibility, allow_extract,
+        allow_assemble, allow_annotate_and_form,
+        allow_form_filling, allow_modify_other,
+        print, encrypt_metadata);
+}
+
 void qpdf_set_r3_encryption_parameters(
     qpdf_data qpdf, char const* user_password, char const* owner_password,
     QPDF_BOOL allow_accessibility, QPDF_BOOL allow_extract,
     qpdf_r3_print_e print, qpdf_r3_modify_e modify)
 {
-    QTC::TC("qpdf", "qpdf-c called qpdf_set_r3_encryption_parameters");
     qpdf->qpdf_writer->setR3EncryptionParameters(
 	user_password, owner_password,
 	allow_accessibility, allow_extract, print, modify);
@@ -571,7 +685,6 @@ void qpdf_set_r4_encryption_parameters(
     qpdf_r3_print_e print, qpdf_r3_modify_e modify,
     QPDF_BOOL encrypt_metadata, QPDF_BOOL use_aes)
 {
-    QTC::TC("qpdf", "qpdf-c called qpdf_set_r4_encryption_parameters");
     qpdf->qpdf_writer->setR4EncryptionParameters(
 	user_password, owner_password,
 	allow_accessibility, allow_extract, print, modify,
@@ -584,7 +697,6 @@ void qpdf_set_r5_encryption_parameters(
     qpdf_r3_print_e print, qpdf_r3_modify_e modify,
     QPDF_BOOL encrypt_metadata)
 {
-    QTC::TC("qpdf", "qpdf-c called qpdf_set_r5_encryption_parameters");
     qpdf->qpdf_writer->setR5EncryptionParameters(
 	user_password, owner_password,
 	allow_accessibility, allow_extract, print, modify,
@@ -597,7 +709,6 @@ void qpdf_set_r6_encryption_parameters(
     qpdf_r3_print_e print, qpdf_r3_modify_e modify,
     QPDF_BOOL encrypt_metadata)
 {
-    QTC::TC("qpdf", "qpdf-c called qpdf_set_r6_encryption_parameters");
     qpdf->qpdf_writer->setR6EncryptionParameters(
 	user_password, owner_password,
 	allow_accessibility, allow_extract, print, modify,
@@ -638,6 +749,6 @@ QPDF_ERROR_CODE qpdf_write(qpdf_data qpdf)
 {
     QPDF_ERROR_CODE status = QPDF_SUCCESS;
     status = trap_errors(qpdf, &call_write);
-    QTC::TC("qpdf", "qpdf-c called qpdf_write", status);
+    QTC::TC("qpdf", "qpdf-c called qpdf_write", (status == 0) ? 0 : 1);
     return status;
 }

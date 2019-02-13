@@ -6,7 +6,11 @@ BINS_examples = \
 	pdf-invert-images \
 	pdf-create \
 	pdf-parse-content \
-	pdf-split-pages
+	pdf-split-pages \
+	pdf-filter-tokens \
+	pdf-count-strings \
+	pdf-set-form-values \
+	pdf-overlay-page
 CBINS_examples = pdf-linearize
 
 TARGETS_examples = $(foreach B,$(BINS_examples) $(CBINS_examples),examples/$(OUTPUT_DIR)/$(call binname,$(B)))
@@ -39,4 +43,4 @@ $(foreach B,$(CBINS_examples),$(eval \
 
 $(foreach B,$(BINS_examples) $(CBINS_examples),$(eval \
   examples/$(OUTPUT_DIR)/$(call binname,$(B)): $(OBJS_$(B)) ; \
-	$(call makebin,$(OBJS_$(B)),$$@,$(LDFLAGS) $(LDFLAGS_libqpdf),$(LIBS_libqpdf) $(LIBS))))
+	$(call makebin,$(OBJS_$(B)),$$@,$(LDFLAGS_libqpdf) $(LDFLAGS),$(LIBS_libqpdf) $(LIBS))))

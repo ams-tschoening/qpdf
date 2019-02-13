@@ -1,14 +1,28 @@
-/* Copyright (c) 2005-2015 Jay Berkenbilt
- *
- * This file is part of qpdf.  This software may be distributed under
- * the terms of version 2 of the Artistic License which may be found
- * in the source distribution.  It is provided "as is" without express
- * or implied warranty.
- */
+// Copyright (c) 2005-2019 Jay Berkenbilt
+//
+// This file is part of qpdf.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+// Versions of qpdf prior to version 7 were released under the terms
+// of version 2.0 of the Artistic License. At your option, you may
+// continue to consider qpdf to be licensed under those terms. Please
+// see the manual for additional information.
 
-#ifndef __QPDF_INPUTSOURCE_HH__
-#define __QPDF_INPUTSOURCE_HH__
+#ifndef QPDF_INPUTSOURCE_HH
+#define QPDF_INPUTSOURCE_HH
 
+#include <qpdf/DLL.h>
 #include <qpdf/Types.h>
 #include <stdio.h>
 #include <string>
@@ -16,17 +30,51 @@
 class InputSource
 {
   public:
+    QPDF_DLL
     InputSource() :
         last_offset(0)
     {
     }
+    QPDF_DLL
     virtual ~InputSource()
     {
     }
 
+    class Finder
+    {
+      public:
+        Finder()
+        {
+        }
+        virtual ~Finder()
+        {
+        }
+
+        virtual bool check() = 0;
+    };
+
+    QPDF_DLL
     void setLastOffset(qpdf_offset_t);
+    QPDF_DLL
     qpdf_offset_t getLastOffset() const;
+    QPDF_DLL
     std::string readLine(size_t max_line_length);
+
+    // Find first or last occurrence of a sequence of characters
+    // starting within the range defined by offset and len such that,
+    // when the input source is positioned at the beginning of that
+    // sequence, finder.check() returns true. If len is 0, the search
+    // proceeds until EOF. If a qualifying pattern is found, these
+    // methods return true and leave the input source positioned
+    // wherever check() left it at the end of the matching pattern.
+    QPDF_DLL
+    bool findFirst(char const* start_chars,
+                   qpdf_offset_t offset, size_t len,
+                   Finder& finder);
+    QPDF_DLL
+    bool findLast(char const* start_chars,
+                  qpdf_offset_t offset, size_t len,
+                  Finder& finder);
 
     virtual qpdf_offset_t findAndSkipNextEOL() = 0;
     virtual std::string const& getName() const = 0;
@@ -40,4 +88,4 @@ class InputSource
     qpdf_offset_t last_offset;
 };
 
-#endif // __QPDF_INPUTSOURCE_HH__
+#endif // QPDF_INPUTSOURCE_HH

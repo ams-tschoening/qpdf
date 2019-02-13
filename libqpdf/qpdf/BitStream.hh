@@ -1,7 +1,7 @@
 // Read bits from a bit stream.  See BitWriter for writing.
 
-#ifndef __BITSTREAM_HH__
-#define __BITSTREAM_HH__
+#ifndef BITSTREAM_HH
+#define BITSTREAM_HH
 
 #include <qpdf/DLL.h>
 
@@ -15,6 +15,8 @@ class BitStream
     QPDF_DLL
     unsigned long long getBits(int nbits);
     QPDF_DLL
+    long long getBitsSigned(int nbits);
+    QPDF_DLL
     void skipToNextByte();
 
   private:
@@ -26,4 +28,4 @@ class BitStream
     unsigned int bits_available;
 };
 
-#endif // __BITSTREAM_HH__
+#endif // BITSTREAM_HH

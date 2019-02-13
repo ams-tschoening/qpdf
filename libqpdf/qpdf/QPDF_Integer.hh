@@ -1,5 +1,5 @@
-#ifndef __QPDF_INTEGER_HH__
-#define __QPDF_INTEGER_HH__
+#ifndef QPDF_INTEGER_HH
+#define QPDF_INTEGER_HH
 
 #include <qpdf/QPDFObject.hh>
 
@@ -9,6 +9,7 @@ class QPDF_Integer: public QPDFObject
     QPDF_Integer(long long val);
     virtual ~QPDF_Integer();
     virtual std::string unparse();
+    virtual JSON getJSON();
     virtual QPDFObject::object_type_e getTypeCode() const;
     virtual char const* getTypeName() const;
     long long getVal() const;
@@ -17,4 +18,4 @@ class QPDF_Integer: public QPDFObject
     long long val;
 };
 
-#endif // __QPDF_INTEGER_HH__
+#endif // QPDF_INTEGER_HH

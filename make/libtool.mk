@@ -37,10 +37,10 @@ endif
 
 # --- Required rule definitions ---
 
-#                       1   2
-# Usage: $(call compile,src,includes)
+#                       1   2        3
+# Usage: $(call compile,src,includes,xflags)
 define compile
-	$(CXX) $(CXXFLAGS) \
+	$(CXX) $(CXXFLAGS) $(3) \
 		$(call depflags,$(basename $(call src_to_obj,$(1)))) \
 		$(foreach I,$(2),-I$(I)) \
 		$(CPPFLAGS) \
@@ -94,14 +94,14 @@ endef
 define makelib
 	$(LIBTOOL) --mode=link \
 		$(CXX) $(CXXFLAGS) $(LD_VERSION_FLAGS) \
-		 -o $(2) $(1) $(4) $(3) \
-		 -rpath $(libdir) -version-info $(5):$(6):$(7)
+		 -o $(2) $(1) $(3) $(4) \
+		 -rpath $(libdir) -version-info $(5):$(6):$(7) -no-undefined
 endef
 
 #                       1    2      3       4
 # Usage: $(call makebin,objs,binary,ldflags,libs)
 define makebin
-	$(LIBTOOL) --mode=link $(CXX) $(CXXFLAGS) $(1) -o $(2) $(4) $(3)
+	$(LIBTOOL) --mode=link $(CXX) $(CXXFLAGS) $(1) -o $(2) $(3) $(4)
 endef
 
 # Install target
@@ -126,7 +126,11 @@ install: all
 	cp include/qpdf/*.h $(DESTDIR)$(includedir)/qpdf
 	cp include/qpdf/*.hh $(DESTDIR)$(includedir)/qpdf
 	cp doc/stylesheet.css $(DESTDIR)$(docdir)
-	cp doc/qpdf-manual.html $(DESTDIR)$(docdir)
-	cp doc/qpdf-manual.pdf $(DESTDIR)$(docdir)
-	cp doc/*.1 $(DESTDIR)$(mandir)/man1
 	cp libqpdf.pc $(DESTDIR)$(libdir)/pkgconfig
+	if [ -f doc/qpdf-manual.html ]; then \
+		cp doc/qpdf-manual.html $(DESTDIR)$(docdir); \
+	fi
+	if [ -f doc/qpdf-manual.pdf ]; then \
+		cp doc/qpdf-manual.pdf $(DESTDIR)$(docdir); \
+	fi
+	cp doc/*.1 $(DESTDIR)$(mandir)/man1

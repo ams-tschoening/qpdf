@@ -27,10 +27,22 @@ QPDF_String::~QPDF_String()
 {
 }
 
+QPDF_String*
+QPDF_String::new_utf16(std::string const& utf8_val)
+{
+    return new QPDF_String(QUtil::utf8_to_utf16(utf8_val));
+}
+
 std::string
 QPDF_String::unparse()
 {
     return unparse(false);
+}
+
+JSON
+QPDF_String::getJSON()
+{
+    return JSON::makeString(getUTF8Val());
 }
 
 QPDFObject::object_type_e
@@ -161,56 +173,12 @@ QPDF_String::getVal() const
 std::string
 QPDF_String::getUTF8Val() const
 {
-    std::string result;
-    size_t len = this->val.length();
-    if ((len >= 2) && (len % 2 == 0) &&
-	(this->val.at(0) == '\xfe') && (this->val.at(1) == '\xff'))
+    if (QUtil::is_utf16(this->val))
     {
-	// This is a Unicode string using big-endian UTF-16.  This
-	// code uses unsigned long and unsigned short to hold
-	// codepoint values.  It requires unsigned long to be at least
-	// 32 bits and unsigned short to be at least 16 bits, but it
-	// will work fine if they are larger.
-	unsigned long codepoint = 0L;
-	for (unsigned int i = 2; i < len; i += 2)
-	{
-	    // Convert from UTF16-BE.  If we get a malformed
-	    // codepoint, this code will generate incorrect output
-	    // without giving a warning.  Specifically, a high
-	    // codepoint not followed by a low codepoint will be
-	    // discarded, and a low codepoint not preceded by a high
-	    // codepoint will just get its low 10 bits output.
-	    unsigned short bits =
-		(static_cast<unsigned char>(this->val.at(i)) << 8) +
-		static_cast<unsigned char>(this->val.at(i+1));
-	    if ((bits & 0xFC00) == 0xD800)
-	    {
-		codepoint = 0x10000 + ((bits & 0x3FF) << 10);
-		continue;
-	    }
-	    else if ((bits & 0xFC00) == 0xDC00)
-	    {
-		if (codepoint != 0)
-		{
-		    QTC::TC("qpdf", "QPDF_String non-trivial UTF-16");
-		}
-		codepoint += bits & 0x3FF;
-	    }
-	    else
-	    {
-		codepoint = bits;
-	    }
-
-	    result += QUtil::toUTF8(codepoint);
-	    codepoint = 0;
-	}
+        return QUtil::utf16_to_utf8(this->val);
     }
     else
     {
-	for (unsigned int i = 0; i < len; ++i)
-	{
-	    result += QUtil::toUTF8(static_cast<unsigned char>(this->val.at(i)));
-	}
+        return QUtil::pdf_doc_to_utf8(this->val);
     }
-    return result;
 }

@@ -62,7 +62,7 @@ void
 QPDF::optimize(std::map<int, int> const& object_stream_data,
 	       bool allow_changes)
 {
-    if (! this->obj_user_to_objects.empty())
+    if (! this->m->obj_user_to_objects.empty())
     {
 	// already optimized
 	return;
@@ -83,19 +83,19 @@ QPDF::optimize(std::map<int, int> const& object_stream_data,
     }
 
     // Traverse pages tree pushing all inherited resources down to the
-    // page level.  This also initializes this->all_pages.
+    // page level.  This also initializes this->m->all_pages.
     pushInheritedAttributesToPage(allow_changes, false);
 
     // Traverse pages
-    int n = this->all_pages.size();
+    int n = this->m->all_pages.size();
     for (int pageno = 0; pageno < n; ++pageno)
     {
         updateObjectMaps(ObjUser(ObjUser::ou_page, pageno),
-                         this->all_pages.at(pageno));
+                         this->m->all_pages.at(pageno));
     }
 
     // Traverse document-level items
-    std::set<std::string> keys = this->trailer.getKeys();
+    std::set<std::string> keys = this->m->trailer.getKeys();
     for (std::set<std::string>::iterator iter = keys.begin();
 	 iter != keys.end(); ++iter)
     {
@@ -107,7 +107,7 @@ QPDF::optimize(std::map<int, int> const& object_stream_data,
 	else
 	{
 	    updateObjectMaps(ObjUser(ObjUser::ou_trailer_key, key),
-			     this->trailer.getKey(key));
+			     this->m->trailer.getKey(key));
 	}
     }
 
@@ -129,8 +129,8 @@ QPDF::optimize(std::map<int, int> const& object_stream_data,
 
     ObjUser root_ou = ObjUser(ObjUser::ou_root);
     QPDFObjGen root_og = QPDFObjGen(root.getObjGen());
-    obj_user_to_objects[root_ou].insert(root_og);
-    object_to_obj_users[root_og].insert(root_ou);
+    this->m->obj_user_to_objects[root_ou].insert(root_og);
+    this->m->object_to_obj_users[root_og].insert(root_ou);
 
     filterCompressedObjects(object_stream_data);
 }
@@ -151,37 +151,34 @@ QPDF::pushInheritedAttributesToPage(bool allow_changes, bool warn_skipped_keys)
     // The record of whether we've done this is cleared by
     // updateAllPagesCache().  If we're warning for skipped keys,
     // re-traverse unconditionally.
-    if (this->pushed_inherited_attributes_to_pages && (! warn_skipped_keys))
+    if (this->m->pushed_inherited_attributes_to_pages && (! warn_skipped_keys))
     {
         return;
     }
 
+    // Calling getAllPages() resolves any duplicated page objects.
+    getAllPages();
+
     // key_ancestors is a mapping of page attribute keys to a stack of
     // Pages nodes that contain values for them.
     std::map<std::string, std::vector<QPDFObjectHandle> > key_ancestors;
-    this->all_pages.clear();
+    this->m->all_pages.clear();
+    std::set<QPDFObjGen> visited;
     pushInheritedAttributesToPageInternal(
-        this->trailer.getKey("/Root").getKey("/Pages"),
-        key_ancestors, this->all_pages, allow_changes, warn_skipped_keys);
-    assert(key_ancestors.empty());
-    this->pushed_inherited_attributes_to_pages = true;
+        this->m->trailer.getKey("/Root").getKey("/Pages"),
+        key_ancestors, this->m->all_pages, allow_changes, warn_skipped_keys,
+        visited);
+    if (! key_ancestors.empty())
+    {
+        throw std::logic_error(
+            "key_ancestors not empty after"
+            " pushing inherited attributes to pages");
+    }
+    this->m->pushed_inherited_attributes_to_pages = true;
 }
 
 void
 QPDF::pushInheritedAttributesToPageInternal(
-    QPDFObjectHandle cur_pages,
-    std::map<std::string, std::vector<QPDFObjectHandle> >& key_ancestors,
-    std::vector<QPDFObjectHandle>& pages,
-    bool allow_changes, bool warn_skipped_keys)
-{
-    std::set<QPDFObjGen> visited;
-    pushInheritedAttributesToPageInternal2(
-        cur_pages, key_ancestors, pages, allow_changes,
-        warn_skipped_keys, visited);
-}
-
-void
-QPDF::pushInheritedAttributesToPageInternal2(
     QPDFObjectHandle cur_pages,
     std::map<std::string, std::vector<QPDFObjectHandle> >& key_ancestors,
     std::vector<QPDFObjectHandle>& pages,
@@ -192,8 +189,8 @@ QPDF::pushInheritedAttributesToPageInternal2(
     if (visited.count(this_og) > 0)
     {
         throw QPDFExc(
-            qpdf_e_pages, this->file->getName(),
-            this->last_object_description, 0,
+            qpdf_e_pages, this->m->file->getName(),
+            this->m->last_object_description, 0,
             "Loop detected in /Pages structure (inherited attributes)");
     }
     visited.insert(this_og);
@@ -203,10 +200,10 @@ QPDF::pushInheritedAttributesToPageInternal2(
 
     if (type == "/Pages")
     {
-	// Make a list of inheritable keys.  Any key other than /Type,
-	// /Parent, Kids, or /Count is an inheritable attribute.  Push
-	// this object onto the stack of pages nodes that have values
-	// for this attribute.
+	// Make a list of inheritable keys. Only the keys /MediaBox,
+	// /CropBox, /Resources, and /Rotate are inheritable
+	// attributes. Push this object onto the stack of pages nodes
+	// that have values for this attribute.
 
 	std::set<std::string> inheritable_keys;
 	std::set<std::string> keys = cur_pages.getKeys();
@@ -219,9 +216,9 @@ QPDF::pushInheritedAttributesToPageInternal2(
 	    {
 		if (! allow_changes)
 		{
-		    throw QPDFExc(qpdf_e_internal, this->file->getName(),
-				  this->last_object_description,
-				  this->file->getLastOffset(),
+		    throw QPDFExc(qpdf_e_internal, this->m->file->getName(),
+				  this->m->last_object_description,
+				  this->m->file->getLastOffset(),
 				  "optimize detected an "
                                   "inheritable attribute when called "
 				  "in no-change mode");
@@ -269,8 +266,8 @@ QPDF::pushInheritedAttributesToPageInternal2(
                     setLastObjectDescription("Pages object",
                                              cur_pages.getObjectID(),
                                              cur_pages.getGeneration());
-                    warn(QPDFExc(qpdf_e_pages, this->file->getName(),
-                                 this->last_object_description, 0,
+                    warn(QPDFExc(qpdf_e_pages, this->m->file->getName(),
+                                 this->m->last_object_description, 0,
                                  "Unknown key " + key + " in /Pages object"
                                  " is being discarded as a result of"
                                  " flattening the /Pages tree"));
@@ -283,7 +280,7 @@ QPDF::pushInheritedAttributesToPageInternal2(
 	int n = kids.getArrayNItems();
 	for (int i = 0; i < n; ++i)
 	{
-            pushInheritedAttributesToPageInternal2(
+            pushInheritedAttributesToPageInternal(
                 kids.getArrayItem(i), key_ancestors, pages,
                 allow_changes, warn_skipped_keys, visited);
 	}
@@ -337,9 +334,9 @@ QPDF::pushInheritedAttributesToPageInternal2(
     }
     else
     {
-	throw QPDFExc(qpdf_e_damaged_pdf, this->file->getName(),
-		      this->last_object_description,
-		      this->file->getLastOffset(),
+	throw QPDFExc(qpdf_e_damaged_pdf, this->m->file->getName(),
+		      this->m->last_object_description,
+		      this->m->file->getLastOffset(),
 		      "invalid Type " + type + " in page tree");
     }
     visited.erase(this_og);
@@ -382,8 +379,8 @@ QPDF::updateObjectMapsInternal(ObjUser const& ou, QPDFObjectHandle oh,
 	    QTC::TC("qpdf", "QPDF opt loop detected");
 	    return;
 	}
-	this->obj_user_to_objects[ou].insert(og);
-	this->object_to_obj_users[og].insert(ou);
+	this->m->obj_user_to_objects[ou].insert(og);
+	this->m->object_to_obj_users[og].insert(ou);
 	visited.insert(og);
     }
 
@@ -445,8 +442,8 @@ QPDF::filterCompressedObjects(std::map<int, int> const& object_stream_data)
     std::map<QPDFObjGen, std::set<ObjUser> > t_object_to_obj_users;
 
     for (std::map<ObjUser, std::set<QPDFObjGen> >::iterator i1 =
-	     this->obj_user_to_objects.begin();
-	 i1 != this->obj_user_to_objects.end(); ++i1)
+	     this->m->obj_user_to_objects.begin();
+	 i1 != this->m->obj_user_to_objects.end(); ++i1)
     {
 	ObjUser const& ou = (*i1).first;
 	std::set<QPDFObjGen> const& objects = (*i1).second;
@@ -468,8 +465,8 @@ QPDF::filterCompressedObjects(std::map<int, int> const& object_stream_data)
     }
 
     for (std::map<QPDFObjGen, std::set<ObjUser> >::iterator i1 =
-	     this->object_to_obj_users.begin();
-	 i1 != this->object_to_obj_users.end(); ++i1)
+	     this->m->object_to_obj_users.begin();
+	 i1 != this->m->object_to_obj_users.end(); ++i1)
     {
 	QPDFObjGen const& og = (*i1).first;
 	std::set<ObjUser> const& objusers = (*i1).second;
@@ -490,6 +487,6 @@ QPDF::filterCompressedObjects(std::map<int, int> const& object_stream_data)
 	}
     }
 
-    this->obj_user_to_objects = t_obj_user_to_objects;
-    this->object_to_obj_users = t_object_to_obj_users;
+    this->m->obj_user_to_objects = t_obj_user_to_objects;
+    this->m->object_to_obj_users = t_object_to_obj_users;
 }

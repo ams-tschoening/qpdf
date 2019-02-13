@@ -1,5 +1,4 @@
 ignored-scope: libtests
-QPDF lindict searching after null 0
 QPDF err expected endobj 0
 QPDF err wrong objid/generation 0
 QPDF check objid 1
@@ -10,7 +9,6 @@ QPDF hint table length direct 0
 QPDF P absent in lindict 0
 QPDF P present in lindict 0
 QPDF expected n n obj 0
-QPDF lindict found newline 0
 QPDF /L mismatch 0
 QPDF err /T mismatch 0
 QPDF err /O mismatch 0
@@ -61,17 +59,16 @@ QPDF trailer size not integer 0
 QPDF trailer prev not integer 0
 QPDFObjectHandle bad brace 0
 QPDFObjectHandle bad array close 0
-QPDFObjectHandle dictionary odd number of elements 0
 QPDF stream without length 0
 QPDF stream length not integer 0
 QPDF missing endstream 0
 QPDFObjectHandle bad dictionary close 0
 QPDF can't find xref 0
-QPDF_Tokenizer bad ) 0
-QPDF_Tokenizer bad > 0
-QPDF_Tokenizer bad ( 0
-QPDF_Tokenizer null in name 0
-QPDF_Tokenizer bad name 0
+QPDFTokenizer bad ) 0
+QPDFTokenizer bad > 0
+QPDFTokenizer bad hexstring character 0
+QPDFTokenizer null in name 0
+QPDFTokenizer bad name 0
 QPDF_Stream invalid filter 0
 QPDF UseOutlines but no Outlines 0
 QPDFObjectHandle clone bool 0
@@ -85,7 +82,6 @@ QPDFObjectHandle clone dictionary 0
 QPDFObjectHandle makeDirect loop 0
 QPDFObjectHandle ERR clone stream 0
 QPDFTokenizer allow pound anywhere in name 0
-QPDF indirect last obj from xref 1
 QPDF default for xref stream field 0 0
 QPDF prev key in xref stream dictionary 0
 QPDF prev key in trailer dictionary 0
@@ -108,12 +104,11 @@ QPDF reconstructed xref table 0
 QPDF recovered in readObjectAtOffset 0
 QPDF recovered stream length 0
 QPDF found wrong endstream in recovery 0
-QPDFObjectHandle indirect to unknown 0
 QPDF_Stream pipeStreamData with null pipeline 0
 QPDFWriter not recompressing /FlateDecode 0
 QPDF_encryption xref stream from encrypted file 0
 qpdf unable to filter 0
-QPDF_String non-trivial UTF-16 0
+QUtil non-trivial UTF-16 0
 QPDF xref overwrite object 0
 QPDF decoding error warning 0
 qpdf-c called qpdf_init 0
@@ -124,7 +119,7 @@ qpdf-c qpdf_next_warning returned warning 0
 qpdf-c called qpdf_set_suppress_warnings 0
 qpdf-c called qpdf_set_ignore_xref_streams 0
 qpdf-c called qpdf_set_attempt_recovery 0
-qpdf-c called qpdf_read 3
+qpdf-c called qpdf_read 2
 qpdf-c called qpdf_get_pdf_version 0
 qpdf-c called qpdf_get_user_password 0
 qpdf-c called qpdf_is_linearized 0
@@ -140,7 +135,7 @@ qpdf-c called qpdf_set_preserve_encryption 0
 qpdf-c called qpdf_set_r2_encryption_parameters 0
 qpdf-c called qpdf_set_r3_encryption_parameters 0
 qpdf-c called qpdf_set_linearization 0
-qpdf-c called qpdf_write 3
+qpdf-c called qpdf_write 1
 qpdf-c called qpdf_allow_accessibility 0
 qpdf-c called qpdf_allow_extract_all 0
 qpdf-c called qpdf_allow_print_low_res 0
@@ -185,7 +180,6 @@ QPDF_Stream getRawStreamData 0
 QPDF_Stream getStreamData 0
 QPDF_Stream expand filter abbreviation 0
 qpdf-c called qpdf_read_memory 0
-Pl_QPDFTokenizer found EI 0
 QPDF stream without newline 0
 QPDF stream with CR only 0
 QPDF stream with CRNL 0
@@ -236,8 +230,8 @@ QPDFWriter copy use_aes 1
 QPDFObjectHandle indirect without context 0
 QPDFObjectHandle trailing data in parse 0
 qpdf pages encryption password 0
-QPDF_Tokenizer EOF reading token 1
-QPDF_Tokenizer EOF reading appendable token 0
+QPDFTokenizer EOF reading token 0
+QPDFTokenizer EOF reading appendable token 0
 QPDFWriter extra header text no newline 0
 QPDFWriter extra header text add newline 0
 QPDF bogus 0 offset 0
@@ -273,3 +267,175 @@ QPDFWriter standard deterministic ID 1
 QPDFWriter linearized deterministic ID 1
 QPDFWriter deterministic with no data 0
 qpdf-c called qpdf_set_deterministic_ID 0
+QPDFObjectHandle indirect with 0 objid 0
+QPDF object id 0 0
+QPDF recursion loop in resolve 0
+QPDFObjectHandle treat word as string 0
+QPDFObjectHandle found fake 1
+QPDFObjectHandle no val for last key 0
+QPDF resolve failure to null 0
+QPDFWriter preserve unreferenced standard 0
+QPDFObjectHandle errors in parsecontent 0
+QPDF stream with non-space 0
+qpdf same file error 0
+qpdf read args from stdin 0
+qpdf read args from file 0
+qpdf split-pages %d 0
+qpdf split-pages .pdf 0
+qpdf split-pages other 0
+QPDFTokenizer allowing bad token 0
+QPDF ignore first space in xref entry 0
+QPDF ignore first extra space in xref entry 0
+QPDF ignore second extra space in xref entry 0
+QPDF ignore length error xref entry 0
+QPDF_encryption pad short parameter 0
+QPDFWriter ignore self-referential object stream 0
+QPDFObjectHandle found old angle 1
+QPDF_Stream special filters 3
+QPDFTokenizer block long token 0
+qpdf-c called qpdf_set_decode_level 0
+qpdf-c called qpdf_set_compress_streams 0
+qpdf-c called qpdf_set_preserve_unreferenced_objects 0
+qpdf-c called qpdf_set_newline_before_endstream 0
+QPDF_Stream TIFF predictor 0
+QPDFTokenizer inline image at EOF 0
+Pl_QPDFTokenizer found ID 0
+QPDFObjectHandle non-stream in stream array 0
+QPDFObjectHandle coalesce called on stream 0
+QPDFObjectHandle coalesce provide stream data 0
+QPDF_Stream bad token at end during normalize 0
+QPDFObjectHandle bad token in parse 0
+QPDFObjectHandle eof in parseInternal 0
+QPDFObjectHandle array bounds 0
+QPDFObjectHandle boolean returning false 0
+QPDFObjectHandle integer returning 0 0
+QPDFObjectHandle real returning 0.0 0
+QPDFObjectHandle name returning dummy name 0
+QPDFObjectHandle string returning empty string 0
+QPDFObjectHandle string returning empty utf8 0
+QPDFObjectHandle operator returning fake value 0
+QPDFObjectHandle inlineimage returning empty data 0
+QPDFObjectHandle array treating as empty 0
+QPDFObjectHandle array null for non-array 0
+QPDFObjectHandle array treating as empty vector 0
+QPDFObjectHandle array ignoring set item 0
+QPDFObjectHandle array ignoring replace items 0
+QPDFObjectHandle array ignoring insert item 0
+QPDFObjectHandle array ignoring append item 0
+QPDFObjectHandle array ignoring erase item 0
+QPDFObjectHandle dictionary false for hasKey 0
+QPDFObjectHandle dictionary null for getKey 0
+QPDFObjectHandle dictionary empty set for getKeys 0
+QPDFObjectHandle dictionary empty map for asMap 0
+QPDFObjectHandle dictionary ignoring replaceKey 0
+QPDFObjectHandle dictionary ignoring removeKey 0
+QPDFObjectHandle dictionary ignoring removereplace 0
+QPDFObjectHandle numeric non-numeric 0
+QPDFObjectHandle erase array bounds 0
+qpdf-c called qpdf_check_pdf 0
+QPDF xref loop 0
+QPDFObjectHandle too deep 0
+QPDFFormFieldObjectHelper non-trivial inheritance 0
+QPDFFormFieldObjectHelper non-trivial qualified name 0
+QPDFFormFieldObjectHelper TU present 0
+QPDFFormFieldObjectHelper TM present 0
+QPDFFormFieldObjectHelper TU absent 0
+QPDFFormFieldObjectHelper TM absent 0
+QPDFFormFieldObjectHelper Q present 0
+QPDFAnnotationObjectHelper AS present 0
+QPDFAnnotationObjectHelper AS absent 0
+QPDFAnnotationObjectHelper AP stream 0
+QPDFAnnotationObjectHelper AP dictionary 0
+QPDFAnnotationObjectHelper AN sub stream 0
+QPDFAnnotationObjectHelper AN null 0
+QPDFAcroFormDocumentHelper fields not array 0
+QPDFAcroFormDocumentHelper orphaned widget 0
+QPDFAcroFormDocumentHelper direct field 0
+QPDFAcroFormDocumentHelper non-dictionary field 0
+QPDFAcroFormDocumentHelper loop 0
+QPDFAcroFormDocumentHelper field found 1
+QPDFAcroFormDocumentHelper annotation found 1
+qpdf disable keep files open 0
+qpdf keep files open n 0
+qpdf keep files open y 0
+qpdf don't disable keep files open 0
+QPDFPageLabelDocumentHelper skip first 0
+QPDFOutlineObjectHelper direct dest 0
+QPDFOutlineObjectHelper action dest 0
+QPDFOutlineObjectHelper named dest 0
+QPDFOutlineDocumentHelper name named dest 0
+QPDFOutlineDocumentHelper string named dest 0
+QPDFOutlineObjectHelper loop 0
+qpdf required parameter 0
+qpdf required choices 0
+QPDFObjectHandle merge top type mismatch 0
+QPDFObjectHandle merge shallow copy 0
+QPDFObjectHandle merge array 0
+QPDFObjectHandle merge array dup 0
+QPDFObjectHandle merge copy from other 0
+QPDFAnnotationObjectHelper explicit matrix 0
+QPDFAnnotationObjectHelper default matrix 0
+QPDFAnnotationObjectHelper rotate 90 0
+QPDFAnnotationObjectHelper rotate 180 0
+QPDFAnnotationObjectHelper rotate 270 0
+QPDFPageDocumentHelper skip widget need appearances 0
+QPDFPageDocumentHelper merge DR 0
+QPDFPageDocumentHelper non-widget annotation 0
+QPDFPageDocumentHelper remove annots 0
+QPDFPageDocumentHelper replace indirect annots 0
+QPDFPageDocumentHelper replace direct annots 0
+QPDFObjectHandle replace with copy 0
+QPDFPageDocumentHelper indirect as resources 0
+QPDFAnnotationObjectHelper forbidden flags 0
+QPDFAnnotationObjectHelper missing required flags 0
+QPDFFormFieldObjectHelper set parent radio button 0
+QPDFFormFieldObjectHelper radio button grandkid widget 0
+QPDFFormFieldObjectHelper turn on radio button 0
+QPDFFormFieldObjectHelper turn off radio button 0
+QPDFFormFieldObjectHelper checkbox kid widget 0
+QPDFObjectHandle broken radio button 0
+QPDFFormFieldObjectHelper set checkbox AS 0
+QPDFObjectHandle broken checkbox 0
+QPDFFormFieldObjectHelper list not found 0
+QPDFFormFieldObjectHelper list found 0
+QPDFFormFieldObjectHelper list first too low 0
+QPDFFormFieldObjectHelper list last too high 0
+QPDF detected dangling ref 0
+qpdf image optimize no pipeline 0
+qpdf image optimize no shrink 0
+qpdf image optimize too small 0
+QPDFFormFieldObjectHelper WinAnsi 0
+QPDF_encryption attachment stream 0
+QPDF pipe foreign encrypted stream 0
+QPDF copy foreign stream with provider 0
+QPDF copy foreign stream with buffer 0
+QPDF immediate copy stream data 0
+qpdf copy same page more than once 1
+QPDFPageObjectHelper bad token finding names 0
+qpdf password mode bytes 0
+qpdf password mode hex-bytes 0
+qpdf password not unicode 0
+qpdf password not encodable 0
+qpdf auto-encode password 0
+qpdf bytes fallback warning 0
+qpdf invalid utf-8 in auto 0
+qpdf input password hex-bytes 0
+QPDFPageDocumentHelper ignore annotation with no appearance 0
+QPDFFormFieldObjectHelper create AS from scratch 0
+QPDFFormFieldObjectHelper create AP from scratch 0
+QPDFFormFieldObjectHelper replaced BMC at EOF 0
+QPDFFormFieldObjectHelper fallback Tf 0
+QPDFPageObjectHelper non-trivial inheritance 0
+QPDFPageObjectHelper copy shared attribute 0
+qpdf from_nr from repeat_nr 0
+QPDF resolve duplicated page object 0
+QPDF handle direct page object 0
+QPDFTokenizer finder found wrong word 0
+QPDFTokenizer found EI the old way 0
+QPDFTokenizer found EI by byte count 0
+QPDFTokenizer inline image at EOF the old way 0
+QPDFTokenizer found EI after more than one try 0
+QPDFPageObjectHelper externalize inline image 0
+QPDFPageObjectHelper keep inline image 0
+qpdf image optimize colorspace 0
+qpdf image optimize bits per component 0
