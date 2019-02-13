@@ -51,7 +51,7 @@ class QPDFOutlineDocumentHelper: public QPDFDocumentHelper
     bool hasOutlines();
 
     QPDF_DLL
-    std::list<PointerHolder<QPDFOutlineObjectHelper> > getTopLevelOutlines();
+    QPDFOutlineObjectHelper::List getTopLevelOutlines();
 
     // If the name is a name object, look it up in the /Dests key of
     // the document catalog. If the name is a string, look it up in
@@ -64,7 +64,7 @@ class QPDFOutlineDocumentHelper: public QPDFDocumentHelper
     // Return a list outlines that are known to target the specified
     // page
     QPDF_DLL
-    std::list<PointerHolder<QPDFOutlineObjectHelper> > getOutlinesForPage(QPDFObjGen const&);
+    QPDFOutlineObjectHelper::List getOutlinesForPage(QPDFObjGen const&);
 
     class Accessor
     {
@@ -95,11 +95,11 @@ class QPDFOutlineDocumentHelper: public QPDFDocumentHelper
         Members();
         Members(Members const&);
 
-        std::list<PointerHolder<QPDFOutlineObjectHelper> > outlines;
+        QPDFOutlineObjectHelper::List outlines;
         std::set<QPDFObjGen> seen;
         QPDFObjectHandle dest_dict;
         PointerHolder<QPDFNameTreeObjectHelper> names_dest;
-        std::map<QPDFObjGen, std::list<PointerHolder<QPDFOutlineObjectHelper> > > by_page;
+        std::map<QPDFObjGen, QPDFOutlineObjectHelper::List> by_page;
     };
 
     PointerHolder<Members> m;
