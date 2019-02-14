@@ -56,7 +56,7 @@ QPDFOutlineDocumentHelper::initializeByPage()
 
     while (! queue.empty())
     {
-        PointerHolder<QPDFOutlineObjectHelper> oh = queue.front();
+        QPDFOutlineObjectHelper::Ptr oh = queue.front();
         queue.pop_front();
         this->m->by_page[oh->getDestPage().getObjGen()].push_back(oh);
         QPDFOutlineObjectHelper::List kids = oh->getKids();

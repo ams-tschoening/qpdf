@@ -37,7 +37,8 @@ class QPDFOutlineDocumentHelper;
 class QPDFOutlineObjectHelper: public QPDFObjectHelper
 {
   public:
-    typedef std::list<PointerHolder<QPDFOutlineObjectHelper> > List;
+    typedef PointerHolder<QPDFOutlineObjectHelper> Ptr;
+    typedef std::list<QPDFOutlineObjectHelper::Ptr> List;
 
     QPDF_DLL
     virtual ~QPDFOutlineObjectHelper()
@@ -53,7 +54,7 @@ class QPDFOutlineObjectHelper: public QPDFObjectHelper
     // Return parent pointer. Returns a null pointer if this is a
     // top-level outline.
     QPDF_DLL
-    PointerHolder<QPDFOutlineObjectHelper> getParent();
+    QPDFOutlineObjectHelper::Ptr getParent();
 
     // Return children as a list.
     QPDF_DLL
@@ -89,7 +90,7 @@ class QPDFOutlineObjectHelper: public QPDFObjectHelper
     {
         friend class QPDFOutlineDocumentHelper;
 
-        static PointerHolder<QPDFOutlineObjectHelper>
+        static QPDFOutlineObjectHelper::Ptr
         create(QPDFObjectHandle oh, QPDFOutlineDocumentHelper& dh, int depth)
         {
             return new QPDFOutlineObjectHelper(oh, dh, depth);
@@ -114,7 +115,7 @@ class QPDFOutlineObjectHelper: public QPDFObjectHelper
         Members(Members const&);
 
         QPDFOutlineDocumentHelper& dh;
-        PointerHolder<QPDFOutlineObjectHelper> parent;
+        QPDFOutlineObjectHelper::Ptr parent;
         QPDFOutlineObjectHelper::List kids;
     };
 
