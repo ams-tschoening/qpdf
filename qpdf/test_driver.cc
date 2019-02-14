@@ -1826,16 +1826,16 @@ void runtest(int n, char const* filename1, char const* arg2)
         for (std::vector<QPDFPageObjectHelper>::iterator iter = pages.begin();
              iter != pages.end(); ++iter, ++pageno)
         {
-            std::list<QPDFOutlineObjectHelper> outlines =
+            QPDFOutlineObjectHelper::List outlines =
                 odh.getOutlinesForPage((*iter).getObjectHandle().getObjGen());
-            for (std::list<QPDFOutlineObjectHelper>::iterator oiter =
+            for (QPDFOutlineObjectHelper::List::iterator oiter =
                      outlines.begin();
                  oiter != outlines.end(); ++oiter)
             {
                 std::cout
                     << "page " << pageno << ": "
-                    << (*oiter).getTitle() << " -> "
-                    << (*oiter).getDest().unparseResolved() << std::endl;
+                    << (*oiter)->getTitle() << " -> "
+                    << (*oiter)->getDest().unparseResolved() << std::endl;
             }
         }
     }
