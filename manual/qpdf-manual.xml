@@ -652,6 +652,19 @@ make
         more than the OS limit's number of files from a script and are
         not worried about a few seconds additional processing time,
         you may want to specify <option>--keep-files-open=n</option>.
+        The threshold for switching may be changed from the default
+        200 with the <option>--keep-files-open-threshold</option>
+        option.
+       </para>
+      </listitem>
+     </varlistentry>
+     <varlistentry>
+      <term><option>--keep-files-open-threshold=<replaceable>count</replaceable></option></term>
+      <listitem>
+       <para>
+        If specified, overrides the default value of 200 used as the
+        threshold for qpdf deciding whether or not to keep files open.
+        See <option>--keep-files-open</option> for details.
        </para>
       </listitem>
      </varlistentry>
@@ -1784,9 +1797,6 @@ outfile.pdf</option>
        </para>
       </listitem>
      </varlistentry>
-
-
-
      <varlistentry>
       <term><option>--externalize-inline-images</option></term>
       <listitem>
@@ -1822,11 +1832,20 @@ outfile.pdf</option>
       </listitem>
      </varlistentry>
      <varlistentry>
+      <term><option>--remove-page-labels</option></term>
+      <listitem>
+       <para>
+        Remove page labels from the output file.
+       </para>
+      </listitem>
+     </varlistentry>
+     <varlistentry>
       <term><option>--qdf</option></term>
       <listitem>
        <para>
         Turns on QDF mode.  For additional information on QDF, please
-        see <xref linkend="ref.qdf"/>.
+        see <xref linkend="ref.qdf"/>. Note that
+        <option>--linearize</option> disables QDF mode.
        </para>
       </listitem>
      </varlistentry>
@@ -2364,7 +2383,9 @@ outfile.pdf</option>
    some restrictions, in an ordinary text editor.  This can be very
    useful for experimenting with different PDF constructs or for
    making one-off edits to PDF files (though there are other reasons
-   why this may not always work).
+   why this may not always work). Note that QDF mode does not support
+   linearized files. If you enable linearization, QDF mode is
+   automatically disabled.
   </para>
   <para>
    It is ordinarily very difficult to edit PDF files in a text editor
