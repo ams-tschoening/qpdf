@@ -30,7 +30,7 @@ static int const EXIT_WARNING = 3;
 
 static char const* whoami = 0;
 
-static std::string expected_version = "8.4.0";
+static std::string expected_version = "8.4.1";
 
 struct PageSpec
 {
@@ -1231,7 +1231,7 @@ ArgParser::argHelp()
         << "starting point, but its pages are replaced with pages as specified.\n"
         << "\n"
         << "--keep-files-open=[yn]\n"
-        << "--keep-files-threshold=count\n"
+        << "--keep-files-open-threshold=count\n"
         << "--pages file [ --password=password ] [ page-range ] ... --\n"
         << "\n"
         << "For each file that pages should be taken from, specify the file, a\n"
