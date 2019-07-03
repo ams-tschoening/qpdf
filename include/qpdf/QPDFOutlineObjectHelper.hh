@@ -55,7 +55,7 @@ class QPDFOutlineObjectHelper: public QPDFObjectHelper
 
     // Return children as a list.
     QPDF_DLL
-    std::list<QPDFOutlineObjectHelper> getKids();
+    std::list<PointerHolder<QPDFOutlineObjectHelper> > getKids();
 
     // Return the destination, regardless of whether it is named or
     // explicit and whether it is directly provided or in a GoTo
@@ -113,7 +113,7 @@ class QPDFOutlineObjectHelper: public QPDFObjectHelper
 
         QPDFOutlineDocumentHelper& dh;
         PointerHolder<QPDFOutlineObjectHelper> parent;
-        std::list<QPDFOutlineObjectHelper> kids;
+        std::list<PointerHolder<QPDFOutlineObjectHelper> > kids;
     };
 
     PointerHolder<Members> m;
