@@ -113,7 +113,7 @@ class QPDFOutlineObjectHelper: public QPDFObjectHelper
 
         QPDFOutlineDocumentHelper& dh;
         PointerHolder<QPDFOutlineObjectHelper> parent;
-        std::list<PointerHolder<QPDFOutlineObjectHelper> > kids;
+        std::list<QPDFOutlineObjectHelper> kids;
     };
 
     PointerHolder<Members> m;
