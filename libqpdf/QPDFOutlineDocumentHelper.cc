@@ -42,7 +42,7 @@ QPDFOutlineDocumentHelper::hasOutlines()
     return ! this->m->outlines.empty();
 }
 
-std::list<QPDFOutlineObjectHelper>
+std::list<PointerHolder<QPDFOutlineObjectHelper> >
 QPDFOutlineDocumentHelper::getTopLevelOutlines()
 {
     return this->m->outlines;

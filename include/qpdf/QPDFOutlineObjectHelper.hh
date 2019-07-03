@@ -87,10 +87,10 @@ class QPDFOutlineObjectHelper: public QPDFObjectHelper
     {
         friend class QPDFOutlineDocumentHelper;
 
-        static QPDFOutlineObjectHelper
+        static PointerHolder<QPDFOutlineObjectHelper>
         create(QPDFObjectHandle oh, QPDFOutlineDocumentHelper& dh, int depth)
         {
-            return QPDFOutlineObjectHelper(oh, dh, depth);
+            return new QPDFOutlineObjectHelper(oh, dh, depth);
         }
     };
     friend class Accessor;
