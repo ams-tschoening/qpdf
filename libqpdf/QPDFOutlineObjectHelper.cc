@@ -32,8 +32,8 @@ QPDFOutlineObjectHelper::QPDFOutlineObjectHelper(
     QPDFObjectHandle cur = oh.getKey("/First");
     while (! cur.isNull())
     {
-        QPDFOutlineObjectHelper new_ooh(cur, dh, 1 + depth);
-        new_ooh.m->parent = new QPDFOutlineObjectHelper(*this);
+        PointerHolder<QPDFOutlineObjectHelper> new_ooh = new QPDFOutlineObjectHelper(cur, dh, 1 + depth);
+        new_ooh->m->parent = new QPDFOutlineObjectHelper(*this);
         this->m->kids.push_back(new_ooh);
         cur = cur.getKey("/Next");
     }
@@ -48,7 +48,17 @@ QPDFOutlineObjectHelper::getParent()
 std::list<QPDFOutlineObjectHelper>
 QPDFOutlineObjectHelper::getKids()
 {
-    return this->m->kids;
+            std::list<QPDFOutlineObjectHelper>                  retVal;
+    const   std::list<PointerHolder<QPDFOutlineObjectHelper> >& myKids(this->m->kids);
+
+    for (std::list<PointerHolder<QPDFOutlineObjectHelper> >::const_iterator   it  = myKids.begin();
+                                                                              it != myKids.end();
+                                                                            ++it)
+    {
+        retVal.push_back(**it);
+    }
+
+    return retVal;
 }
 
 QPDFObjectHandle
